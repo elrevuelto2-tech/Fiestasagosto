@@ -198,6 +198,7 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -271,6 +272,7 @@
         ${a.activo ? '<span class="badge-activo">Activo</span>' : ''}
         <div class="album-acciones">
           ${!a.activo ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
+          <button class="btn btn-gris" id="btn-dl-${a.id}" onclick="descargarAlbum('${a.id}', '${esc(a.nombre)}')">⬇ Fotos</button>
           <button class="btn btn-rojo" onclick="eliminarAlbum('${a.id}', '${esc(a.nombre)}')">Eliminar</button>
         </div>`;
       return div;
@@ -316,6 +318,33 @@
         snap.forEach(c => { if (c.val().activo) updates['albumes/' + c.key + '/activo'] = null; });
         return db.ref().update(updates);
       });
+    }
+
+    function descargarAlbum(id, nombre) {
+      const btn = document.getElementById('btn-dl-' + id);
+      btn.disabled = true; btn.textContent = 'Cargando...';
+      db.ref('fotos/' + id).once('value').then(snap => {
+        if (!snap.exists()) { mostrarMsg('El álbum no tiene fotos', 'err'); btn.disabled = false; btn.innerHTML = '⬇ Fotos'; return; }
+        const zip = new JSZip();
+        let i = 1;
+        snap.forEach(c => {
+          const base64 = c.val().img;
+          if (!base64) return;
+          const data = base64.split(',')[1];
+          zip.file('foto-' + String(i).padStart(3,'0') + '.jpg', data, { base64: true });
+          i++;
+        });
+        btn.textContent = 'Generando ZIP...';
+        return zip.generateAsync({ type: 'blob' }).then(blob => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = nombre.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '_') + '.zip';
+          a.click();
+          URL.revokeObjectURL(a.href);
+          mostrarMsg((i - 1) + ' fotos descargadas', 'ok');
+        });
+      }).catch(err => mostrarMsg('Error: ' + err.message, 'err'))
+        .finally(() => { btn.disabled = false; btn.innerHTML = '⬇ Fotos'; });
     }
 
     function eliminarAlbum(id, nombre) {
