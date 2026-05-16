@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Peña el Revuelto</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; --rojo: #c0392b; --verde: #1a7a3a; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0d0d1a; color: #fff;
+      min-height: 100dvh;
+    }
+
+    /* ── Login ── */
+    #login-screen {
+      min-height: 100dvh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #login-box {
+      background: #1a1a2e; border-radius: 20px;
+      padding: 36px 32px; width: min(380px, 94vw);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    #login-box h1 { font-size: 1.3rem; text-align: center; }
+    #login-box p  { font-size: 0.85rem; color: rgba(255,255,255,0.5); text-align: center; }
+
+    /* ── Admin panel ── */
+    #admin-screen { display: none; }
+    header {
+      background: var(--azul); padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
+    header h1 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+    header span { font-size: 0.75rem; opacity: 0.7; }
+
+    .contenido { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 28px; }
+
+    /* ── Cards ── */
+    .card {
+      background: #1a1a2e; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08); padding: 20px;
+    }
+    .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: rgba(255,255,255,0.9); }
+
+    /* ── Form ── */
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .form-group label { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
+    input[type=text], input[type=password], textarea, select {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 10px 14px;
+      color: #fff; font-size: 0.9rem; width: 100%;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--azul); }
+    textarea { resize: vertical; min-height: 70px; }
+
+    /* ── Botones ── */
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-azul  { background: var(--azul); color: #fff; }
+    .btn-verde { background: var(--verde); color: #fff; }
+    .btn-rojo  { background: var(--rojo);  color: #fff; padding: 6px 14px; font-size: 0.78rem; }
+    .btn-gris  { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn-full  { width: 100%; padding: 13px; font-size: 0.95rem; }
+
+    /* ── Lista de álbumes ── */
+    #lista-albumes { display: flex; flex-direction: column; gap: 10px; }
+
+    .album-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .album-item.activo { border-color: var(--azul); background: rgba(0,71,171,0.15); }
+
+    .album-info { flex: 1; min-width: 0; }
+    .album-nombre { font-weight: 700; font-size: 0.95rem; }
+    .album-desc   { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .album-meta   { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+    .badge-activo {
+      background: var(--azul); color: #fff;
+      font-size: 0.68rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .album-acciones { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* Estado vacío */
+    .vacio { text-align: center; color: rgba(255,255,255,0.3); padding: 30px; font-size: 0.9rem; }
+
+    /* Mensaje de estado */
+    #msg {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; padding: 10px 24px; border-radius: 30px;
+      font-size: 0.88rem; font-weight: 600;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+      z-index: 100; white-space: nowrap;
+    }
+    #msg.visible { opacity: 1; }
+    #msg.ok  { border-color: #2ecc71; color: #2ecc71; }
+    #msg.err { border-color: #e74c3c; color: #e74c3c; }
+
+    /* Enlace a la web */
+    .link-web {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.5); font-size: 0.8rem; text-decoration: none;
+    }
+    .link-web:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla de login -->
+  <div id="login-screen">
+    <div id="login-box">
+      <h1>Panel de Administración</h1>
+      <p>Peña el Revuelto</p>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="input-pass" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-azul btn-full" onclick="login()">Entrar</button>
+      <p id="login-error" style="color:#e74c3c;text-align:center;font-size:0.82rem;display:none">Contraseña incorrecta</p>
+    </div>
+  </div>
+
+  <!-- Panel de admin -->
+  <div id="admin-screen">
+    <header>
+      <div>
+        <h1>Panel Admin — Peña el Revuelto</h1>
+        <span>Gestión de álbumes</span>
+      </div>
+      <a href="index.html" class="link-web">← Ver la web</a>
+    </header>
+
+    <div class="contenido">
+
+      <!-- Crear álbum -->
+      <div class="card">
+        <h2>➕ Crear nuevo álbum</h2>
+        <div class="form-group">
+          <label>Nombre del álbum *</label>
+          <input type="text" id="nuevo-nombre" placeholder="Ej: Fiestas de San Isidro 2026" maxlength="60" />
+        </div>
+        <div class="form-group">
+          <label>Descripción (opcional)</label>
+          <input type="text" id="nueva-desc" placeholder="Ej: 15 de mayo de 2026" maxlength="100" />
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+          <button class="btn btn-azul" onclick="crearAlbum()">Crear álbum</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:rgba(255,255,255,0.6);cursor:pointer">
+            <input type="checkbox" id="nuevo-activo" style="width:auto" />
+            Activarlo directamente
+          </label>
+        </div>
+      </div>
+
+      <!-- Lista de álbumes -->
+      <div class="card">
+        <h2>📁 Álbumes creados</h2>
+        <div id="lista-albumes">
+          <div class="vacio">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="card">
+        <h2>🔑 Cambiar contraseña</h2>
+        <div style="display:flex;gap:10px">
+          <input type="password" id="nueva-pass" placeholder="Nueva contraseña" style="flex:1" />
+          <button class="btn btn-gris" onclick="cambiarPass()">Guardar</button>
+        </div>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:8px">La contraseña se guarda solo en este navegador.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="msg"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain:        "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL:       "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:         "fotosfiestas-4609c",
+      storageBucket:     "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId:             "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ── Contraseña ─────────────────────────────────────────────────────────
+    const PASS_DEFAULT = 'revuelto2026';
+    const passGuardada = () => localStorage.getItem('pena_admin_pass') || PASS_DEFAULT;
+
+    function login() {
+      const val = document.getElementById('input-pass').value;
+      if (val === passGuardada()) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-screen').style.display = 'block';
+        cargarAlbumes();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    }
+
+    document.getElementById('input-pass').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    function cambiarPass() {
+      const nueva = document.getElementById('nueva-pass').value.trim();
+      if (!nueva || nueva.length < 4) { mostrarMsg('Mínimo 4 caracteres', 'err'); return; }
+      localStorage.setItem('pena_admin_pass', nueva);
+      document.getElementById('nueva-pass').value = '';
+      mostrarMsg('Contraseña guardada', 'ok');
+    }
+
+    // ── Álbumes ────────────────────────────────────────────────────────────
+    const albumes = {};
+
+    function cargarAlbumes() {
+      db.ref('albumes').on('value', snap => {
+        const lista = document.getElementById('lista-albumes');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Aún no hay álbumes. ¡Crea el primero!</div>'; return; }
+        const items = [];
+        snap.forEach(child => { items.push({ id: child.key, ...child.val() }); });
+        items.sort((a, b) => b.ts - a.ts);
+        items.forEach(a => {
+          albumes[a.id] = a;
+          lista.appendChild(renderAlbum(a));
+        });
+      });
+    }
+
+    function renderAlbum(a) {
+      const div = document.createElement('div');
+      div.className = 'album-item' + (a.activo ? ' activo' : '');
+      div.id = 'album-item-' + a.id;
+      const fecha = new Date(a.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+      div.innerHTML = `
+        <div class="album-info">
+          <div class="album-nombre">${esc(a.nombre)}</div>
+          ${a.descripcion ? `<div class="album-desc">${esc(a.descripcion)}</div>` : ''}
+          <div class="album-meta">Creado el ${fecha}</div>
+        </div>
+        ${a.activo ? '<span class="badge-activo">Activo</span>' : ''}
+        <div class="album-acciones">
+          ${!a.activo ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
+          <button class="btn btn-rojo" onclick="eliminarAlbum('${a.id}', '${esc(a.nombre)}')">Eliminar</button>
+        </div>`;
+      return div;
+    }
+
+    function crearAlbum() {
+      const nombre = document.getElementById('nuevo-nombre').value.trim();
+      const desc   = document.getElementById('nueva-desc').value.trim();
+      const activo = document.getElementById('nuevo-activo').checked;
+      if (!nombre) { mostrarMsg('El nombre es obligatorio', 'err'); return; }
+
+      const promesas = [];
+
+      // Si se activa, desactivar el actual primero
+      if (activo) {
+        promesas.push(desactivarTodos());
+      }
+
+      Promise.all(promesas).then(() => {
+        const ref  = db.ref('albumes').push();
+        const data = { nombre, ts: Date.now() };
+        if (desc)   data.descripcion = desc;
+        if (activo) data.activo = true;
+        return ref.set(data);
+      }).then(() => {
+        document.getElementById('nuevo-nombre').value = '';
+        document.getElementById('nueva-desc').value   = '';
+        document.getElementById('nuevo-activo').checked = false;
+        mostrarMsg('Álbum creado', 'ok');
+      }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function activarAlbum(id) {
+      desactivarTodos().then(() => {
+        return db.ref('albumes/' + id + '/activo').set(true);
+      }).then(() => mostrarMsg('Álbum activado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function desactivarTodos() {
+      return db.ref('albumes').once('value').then(snap => {
+        const updates = {};
+        snap.forEach(c => { if (c.val().activo) updates['albumes/' + c.key + '/activo'] = null; });
+        return db.ref().update(updates);
+      });
+    }
+
+    function eliminarAlbum(id, nombre) {
+      if (!confirm(`¿Eliminar el álbum "${nombre}" y todas sus fotos?\nEsta acción no se puede deshacer.`)) return;
+      const updates = {};
+      updates['albumes/' + id]      = null;
+      updates['fotos/' + id]        = null;
+      updates['comentarios/' + id]  = null;
+      db.ref().update(updates)
+        .then(() => mostrarMsg('Álbum eliminado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function mostrarMsg(texto, tipo) {
+      const el = document.getElementById('msg');
+      el.textContent = texto;
+      el.className = 'visible ' + (tipo || '');
+      setTimeout(() => { el.className = ''; }, 3000);
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

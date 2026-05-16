@@ -13,409 +13,161 @@
   <link rel="apple-touch-icon" href="icon-192.png" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --azul: #0047ab;
-      --azul-oscuro: #003080;
-      --radio: 14px;
-    }
-
+    :root { --azul: #0047ab; --azul-oscuro: #003080; --radio: 14px; }
     html { scroll-behavior: smooth; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; }
 
-    body {
-      min-height: 100dvh;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0a0a1a;
-      color: #fff;
-      overflow-x: hidden;
-    }
-
-    /* ── Fondo difuminado ── */
+    /* Fondo difuminado */
     #fondo {
       position: fixed; inset: 0; z-index: 0;
       background-image: url('https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/foto-grupo.jpg');
       background-size: cover; background-position: center;
-      filter: blur(18px) brightness(0.25);
-      transform: scale(1.05);
+      filter: blur(18px) brightness(0.25); transform: scale(1.05);
     }
 
-    /* ── Header ── */
-    header {
-      position: sticky; top: 0; z-index: 50;
-      background: var(--azul);
-      box-shadow: 0 2px 20px rgba(0,0,0,0.5);
-      padding: 0 16px;
-    }
-    .header-inner {
-      max-width: 900px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 0; gap: 12px;
-    }
-    .header-titulo {
-      display: flex; flex-direction: column; line-height: 1.2;
-    }
-    .header-titulo strong {
-      font-size: clamp(1rem, 3vw, 1.5rem);
-      font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase;
-    }
-    .header-titulo span {
-      font-size: clamp(0.65rem, 1.5vw, 0.85rem);
-      opacity: 0.75; letter-spacing: 0.08em;
-    }
+    /* Header */
+    header { position: sticky; top: 0; z-index: 50; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,0.5); padding: 0 16px; }
+    .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 0; gap: 12px; }
+    .header-titulo { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+    .header-titulo strong { font-size: clamp(0.9rem, 3vw, 1.5rem); font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-titulo span { font-size: clamp(0.6rem, 1.5vw, 0.82rem); opacity: 0.75; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header-acciones { display: flex; gap: 8px; flex-shrink: 0; }
-    .btn-header {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: #fff; border-radius: 8px;
-      padding: 7px 12px; font-size: 0.78rem; cursor: pointer;
-      white-space: nowrap; transition: background 0.2s;
-    }
+    .btn-header { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #fff; border-radius: 8px; padding: 7px 12px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
     .btn-header:hover { background: rgba(255,255,255,0.25); }
 
-    /* ── Contenido principal ── */
-    #contenido {
-      position: relative; z-index: 1;
-      max-width: 900px; margin: 0 auto;
-      padding: 20px 12px 100px;
-    }
+    /* Contenido */
+    #contenido { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 20px 12px 100px; }
 
-    /* Banner decorativo */
-    #banner-deco {
-      width: 100%; border-radius: var(--radio);
-      overflow: hidden; margin-bottom: 20px;
-      max-height: 140px; display: block;
-    }
-    #banner-deco img {
-      width: 100%; height: 140px;
-      object-fit: cover; object-position: center;
-      filter: brightness(0.85);
-      display: block;
-    }
+    /* Banner */
+    #banner-deco { width: 100%; border-radius: var(--radio); overflow: hidden; margin-bottom: 20px; max-height: 140px; display: block; }
+    #banner-deco img { width: 100%; height: 140px; object-fit: cover; object-position: center; filter: brightness(0.85); display: block; }
     #banner-deco.sin-imagen { display: none; }
 
     /* Estado vacío */
-    #vacio {
-      text-align: center; padding: 60px 20px;
-      color: rgba(255,255,255,0.4);
-    }
+    #vacio { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.4); }
     #vacio .icono { font-size: 3.5rem; margin-bottom: 16px; }
-    #vacio p { font-size: 1rem; line-height: 1.6; }
+    #vacio p { font-size: 1rem; line-height: 1.6; white-space: pre-line; }
     #vacio.oculto { display: none; }
 
-    /* ── Grid de fotos ── */
-    #grid {
-      columns: 2; column-gap: 10px;
-      /* 3 columnas en pantallas más anchas */
-    }
+    /* Grid */
+    #grid { columns: 2; column-gap: 10px; }
     @media (min-width: 600px) { #grid { columns: 3; } }
     @media (min-width: 900px) { #grid { columns: 4; } }
 
-    .foto-card {
-      break-inside: avoid; margin-bottom: 10px;
-      border-radius: var(--radio); overflow: hidden;
-      background: rgba(255,255,255,0.06);
-      cursor: pointer; position: relative;
-      transition: transform 0.2s;
-    }
+    .foto-card { break-inside: avoid; margin-bottom: 10px; border-radius: var(--radio); overflow: hidden; background: rgba(255,255,255,0.06); cursor: pointer; transition: transform 0.2s; }
     .foto-card:active { transform: scale(0.97); }
-
-    .foto-card img {
-      width: 100%; display: block;
-      border-radius: var(--radio) var(--radio) 0 0;
-    }
-
-    .foto-card-footer {
-      padding: 7px 10px;
-      display: flex; align-items: center; justify-content: flex-end;
-    }
-    .btn-comentarios {
-      background: none; border: none; color: rgba(255,255,255,0.6);
-      font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 4px;
-    }
+    .foto-card img { width: 100%; display: block; border-radius: var(--radio) var(--radio) 0 0; }
+    .foto-card-footer { padding: 7px 10px; display: flex; align-items: center; justify-content: flex-end; }
+    .btn-comentarios { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
     .btn-comentarios:hover { color: #fff; }
 
-    /* ── FAB subir foto ── */
-    #fab {
-      position: fixed; bottom: 24px; right: 20px; z-index: 40;
-      width: 58px; height: 58px;
-      background: var(--azul);
-      border: none; border-radius: 50%; color: #fff; font-size: 1.5rem;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 24px rgba(0,0,71,0.6);
-      transition: transform 0.15s, background 0.2s;
-    }
+    /* FAB */
+    #fab { position: fixed; bottom: 24px; right: 20px; z-index: 40; width: 58px; height: 58px; background: var(--azul); border: none; border-radius: 50%; color: #fff; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 24px rgba(0,0,71,0.6); transition: transform 0.15s; }
     #fab:active { transform: scale(0.91); }
 
-    /* Notificación nueva foto */
-    #nueva-foto-notif {
-      position: fixed; bottom: 94px; right: 20px; z-index: 40;
-      background: var(--azul); color: #fff;
-      padding: 8px 14px; border-radius: 10px;
-      font-size: 0.8rem; font-weight: 700;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-      opacity: 0; transform: translateY(8px);
-      transition: opacity 0.3s, transform 0.3s;
-      pointer-events: none;
-    }
+    /* Notificación */
+    #nueva-foto-notif { position: fixed; bottom: 94px; right: 20px; z-index: 40; background: var(--azul); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.5); opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
     #nueva-foto-notif.visible { opacity: 1; transform: translateY(0); }
 
-    /* ── Modal foto + comentarios ── */
-    #modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
-      padding: 16px; align-items: center; justify-content: center;
-    }
+    /* Modal foto + comentarios */
+    #modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); padding: 16px; align-items: center; justify-content: center; }
     #modal-overlay.abierto { display: flex; }
-
-    #modal {
-      background: #1a1a2e;
-      border-radius: 20px; overflow: hidden;
-      width: 100%; max-width: 540px;
-      max-height: 90dvh;
-      display: flex; flex-direction: column;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    #modal-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
-      flex-shrink: 0;
-    }
+    #modal { background: #1a1a2e; border-radius: 20px; overflow: hidden; width: 100%; max-width: 540px; max-height: 90dvh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); }
+    #modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
     #modal-header span { font-size: 0.85rem; opacity: 0.6; }
-    #btn-cerrar-modal {
-      background: none; border: none; color: #fff;
-      font-size: 1.3rem; cursor: pointer; opacity: 0.7; line-height: 1;
-    }
-
-    #modal-foto {
-      width: 100%; max-height: 50dvh;
-      object-fit: contain; background: #000;
-      flex-shrink: 0;
-    }
-
-    #modal-comentarios-wrap {
-      flex: 1; overflow-y: auto; padding: 12px 16px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-
-    .comentario {
-      display: flex; flex-direction: column; gap: 2px;
-    }
-    .comentario-autor {
-      font-size: 0.78rem; font-weight: 700; color: #7ab3ff;
-    }
-    .comentario-texto {
-      font-size: 0.9rem; color: rgba(255,255,255,0.85);
-      line-height: 1.4;
-    }
-    .comentario-hora {
-      font-size: 0.7rem; color: rgba(255,255,255,0.3);
-    }
-
-    #sin-comentarios {
-      text-align: center; color: rgba(255,255,255,0.3);
-      font-size: 0.85rem; padding: 20px 0;
-    }
-
-    /* Input comentario */
-    #modal-input-wrap {
-      padding: 10px 16px 14px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
-    }
+    #btn-cerrar-modal { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; opacity: 0.7; line-height: 1; }
+    #modal-foto { width: 100%; max-height: 50dvh; object-fit: contain; background: #000; flex-shrink: 0; }
+    #modal-comentarios-wrap { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .comentario { display: flex; flex-direction: column; gap: 2px; }
+    .comentario-autor { font-size: 0.78rem; font-weight: 700; color: #7ab3ff; }
+    .comentario-texto { font-size: 0.9rem; color: rgba(255,255,255,0.85); line-height: 1.4; }
+    .comentario-hora { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
+    #sin-comentarios { text-align: center; color: rgba(255,255,255,0.3); font-size: 0.85rem; padding: 20px 0; }
+    #modal-input-wrap { padding: 10px 16px 14px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
     #modal-input-fila { display: flex; gap: 8px; }
-    #input-nombre {
-      width: 100px; flex-shrink: 0;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px; padding: 10px 12px;
-      color: #fff; font-size: 0.85rem;
-    }
+    #input-nombre { width: 100px; flex-shrink: 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 12px; color: #fff; font-size: 0.85rem; }
     #input-nombre::placeholder { color: rgba(255,255,255,0.3); }
     #input-nombre:focus { outline: none; border-color: var(--azul); }
-    #input-comentario {
-      flex: 1; background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px; padding: 10px 14px;
-      color: #fff; font-size: 0.9rem;
-    }
+    #input-comentario { flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 0.9rem; }
     #input-comentario::placeholder { color: rgba(255,255,255,0.35); }
     #input-comentario:focus { outline: none; border-color: var(--azul); }
-    #btn-enviar-comentario {
-      background: var(--azul); color: #fff; border: none;
-      border-radius: 10px; padding: 10px 16px;
-      font-size: 0.88rem; font-weight: 700; cursor: pointer; flex-shrink: 0;
-      transition: background 0.2s;
-    }
-    #btn-enviar-comentario:hover { background: var(--azul-oscuro); }
+    #btn-enviar-comentario { background: var(--azul); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 
-    /* ── Modal subir foto ── */
-    #modal-subir-overlay {
-      display: none; position: fixed; inset: 0; z-index: 110;
-      background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
-      align-items: flex-end; justify-content: center; padding: 0;
-    }
+    /* Modal subir */
+    #modal-subir-overlay { display: none; position: fixed; inset: 0; z-index: 110; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); align-items: flex-end; justify-content: center; }
     #modal-subir-overlay.abierto { display: flex; }
-
-    #modal-subir {
-      background: #1a1a2e;
-      border-radius: 24px 24px 0 0;
-      width: 100%; max-width: 480px;
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 14px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-bottom: none;
-    }
-    #modal-subir h3 {
-      font-size: 1rem; font-weight: 700; text-align: center;
-    }
-
-    #zona-upload {
-      width: 100%; aspect-ratio: 4/3;
-      border: 2px dashed rgba(255,255,255,0.2);
-      border-radius: var(--radio);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 8px; cursor: pointer; overflow: hidden; position: relative;
-      transition: border-color 0.2s;
-    }
-    #zona-upload:active { border-color: #fff; }
+    #modal-subir { background: #1a1a2e; border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; padding: 20px; display: flex; flex-direction: column; gap: 14px; border: 1px solid rgba(255,255,255,0.1); border-bottom: none; }
+    #modal-subir h3 { font-size: 1rem; font-weight: 700; text-align: center; }
+    #album-badge { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: -8px; }
+    #zona-upload { width: 100%; aspect-ratio: 4/3; border: 2px dashed rgba(255,255,255,0.2); border-radius: var(--radio); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; overflow: hidden; position: relative; }
     #zona-upload .icono-upload { font-size: 2.5rem; }
     #zona-upload p { color: rgba(255,255,255,0.5); font-size: 0.88rem; text-align: center; }
-
-    #preview-subir {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; display: none;
-    }
-
+    #preview-subir { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
     #file-input { display: none; }
-
-    #btn-enviar-foto {
-      width: 100%; padding: 14px;
-      background: var(--azul); color: #fff; border: none;
-      border-radius: var(--radio); font-size: 1rem; font-weight: 700;
-      cursor: pointer; display: none;
-    }
+    #btn-enviar-foto { width: 100%; padding: 14px; background: var(--azul); color: #fff; border: none; border-radius: var(--radio); font-size: 1rem; font-weight: 700; cursor: pointer; display: none; }
     #btn-enviar-foto:disabled { background: #334; cursor: not-allowed; }
-
-    .barra-progreso-wrap {
-      width: 100%; background: rgba(255,255,255,0.1);
-      border-radius: 4px; height: 5px; display: none; overflow: hidden;
-    }
-    #barra-progreso {
-      height: 100%; background: #4a9eff;
-      width: 0%; transition: width 0.2s; border-radius: 4px;
-    }
-
-    #status-subir {
-      font-size: 0.85rem; text-align: center;
-      color: rgba(255,255,255,0.6); min-height: 18px;
-    }
+    .barra-progreso-wrap { width: 100%; background: rgba(255,255,255,0.1); border-radius: 4px; height: 5px; display: none; overflow: hidden; }
+    #barra-progreso { height: 100%; background: #4a9eff; width: 0%; transition: width 0.2s; border-radius: 4px; }
+    #status-subir { font-size: 0.85rem; text-align: center; color: rgba(255,255,255,0.6); min-height: 18px; }
     #status-subir.ok  { color: #5ddb5d; font-weight: 700; }
     #status-subir.err { color: #ff6b6b; }
+    #btn-cerrar-subir { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 0.85rem; cursor: pointer; text-align: center; padding: 4px; }
 
-    #btn-cerrar-subir {
-      background: none; border: none; color: rgba(255,255,255,0.4);
-      font-size: 0.85rem; cursor: pointer; text-align: center; padding: 4px;
-    }
-
-    /* ── Slideshow TV ── */
-    #modal-tv-overlay {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: #000;
-    }
+    /* Slideshow TV */
+    #modal-tv-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: #000; }
     #modal-tv-overlay.abierto { display: block; }
-
     #tv-slideshow { position: absolute; inset: 0; }
-    .tv-slide {
-      position: absolute; inset: 0; opacity: 0;
-      transition: opacity 1.2s ease-in-out;
-    }
+    .tv-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease-in-out; }
     .tv-slide.activa { opacity: 1; }
     .tv-slide img { width: 100%; height: 100%; object-fit: cover; }
     .tv-slide.activa img { animation: kenburns 8s ease-in-out forwards; }
-    @keyframes kenburns {
-      0%   { transform: scale(1) translate(0,0); }
-      100% { transform: scale(1.12) translate(-2%,-1.5%); }
-    }
+    @keyframes kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.12) translate(-2%,-1.5%); } }
     .tv-slide.activa.kb1 img { animation-name: kb1; }
     @keyframes kb1 { 0% { transform: scale(1.08) translate(2%,1%); } 100% { transform: scale(1); } }
     .tv-slide.activa.kb2 img { animation-name: kb2; }
     @keyframes kb2 { 0% { transform: scale(1) translate(2%,-1%); } 100% { transform: scale(1.1) translate(-1%,1%); } }
     .tv-slide.activa.kb3 img { animation-name: kb3; }
     @keyframes kb3 { 0% { transform: scale(1.1) translate(-2%,1%); } 100% { transform: scale(1) translate(1%,-1%); } }
-
-    #tv-top {
-      position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-      background: var(--azul); color: #fff;
-      text-align: center; padding: 12px;
-      font-size: clamp(1.2rem, 3vw, 2rem);
-      font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase;
-    }
-    #tv-bottom {
-      position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-      padding: 24px 28px 20px;
-      display: flex; justify-content: space-between; align-items: flex-end;
-      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
-    }
-    #tv-bottom .tv-titulo {
-      font-size: clamp(1rem, 2.5vw, 1.5rem);
-      font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.07em; color: #fff;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.9);
-    }
+    #tv-top { position: absolute; top: 0; left: 0; right: 0; z-index: 10; background: var(--azul); color: #fff; text-align: center; padding: 12px; font-size: clamp(1.2rem, 3vw, 2rem); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+    #tv-nombre-album { position: absolute; top: 55px; left: 0; right: 0; z-index: 10; text-align: center; font-size: clamp(0.8rem, 2vw, 1.1rem); color: rgba(255,255,255,0.7); letter-spacing: 0.05em; }
+    #tv-bottom { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; padding: 24px 28px 20px; display: flex; justify-content: space-between; align-items: flex-end; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%); }
+    #tv-bottom .tv-titulo { font-size: clamp(1rem, 2.5vw, 1.5rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,0.9); }
     #tv-contador { color: rgba(255,255,255,0.7); font-size: 1rem; }
-    #btn-salir-tv {
-      position: absolute; top: 70px; right: 16px; z-index: 20;
-      background: rgba(0,0,0,0.5); color: #fff;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 10px; padding: 8px 14px; font-size: 0.82rem;
-      cursor: pointer; backdrop-filter: blur(6px);
-    }
+    #btn-salir-tv { position: absolute; top: 70px; right: 16px; z-index: 20; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 8px 14px; font-size: 0.82rem; cursor: pointer; backdrop-filter: blur(6px); }
   </style>
 </head>
 <body>
 
-  <!-- Fondo difuminado -->
   <div id="fondo"></div>
 
-  <!-- Header -->
   <header>
     <div class="header-inner">
       <div class="header-titulo">
-        <strong>Peña el Revuelto</strong>
-        <span>Fiestas de Agosto 2026 · Villanueva de Gállego</span>
+        <strong id="h-nombre">Peña el Revuelto</strong>
+        <span id="h-sub">Fiestas de Agosto 2026 · Villanueva de Gállego</span>
       </div>
       <div class="header-acciones">
-        <button class="btn-header" onclick="abrirTV()">▶ Slideshow TV</button>
+        <button class="btn-header" onclick="abrirTV()">▶ TV</button>
+        <button class="btn-header" onclick="location.href='admin.html'">⚙ Admin</button>
       </div>
     </div>
   </header>
 
-  <!-- Contenido -->
   <div id="contenido">
-
-    <!-- Banner decorativo -->
     <div id="banner-deco">
       <img src="https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/banner.jpg" alt="Peña el Revuelto" onerror="document.getElementById('banner-deco').classList.add('sin-imagen')" />
     </div>
-
-    <!-- Estado vacío -->
     <div id="vacio">
       <div class="icono">📸</div>
-      <p>Aún no hay fotos.<br>¡Sé el primero en subir la tuya!</p>
+      <p>Aún no hay fotos.\n¡Sé el primero en subir la tuya!</p>
     </div>
-
-    <!-- Grid de fotos -->
     <div id="grid"></div>
-
   </div>
 
-  <!-- FAB subir foto -->
   <div id="nueva-foto-notif">📸 ¡Nueva foto!</div>
   <button id="fab" onclick="abrirSubir()" title="Subir foto">📷</button>
 
-  <!-- Modal: ver foto + comentarios -->
+  <!-- Modal foto + comentarios -->
   <div id="modal-overlay" onclick="cerrarModal(event)">
     <div id="modal">
       <div id="modal-header">
@@ -436,10 +188,11 @@
     </div>
   </div>
 
-  <!-- Modal: subir foto -->
+  <!-- Modal subir foto -->
   <div id="modal-subir-overlay" onclick="cerrarSubir(event)">
     <div id="modal-subir">
       <h3>Subir foto</h3>
+      <p id="album-badge">Álbum: cargando...</p>
       <div id="zona-upload" onclick="document.getElementById('file-input').click()">
         <span class="icono-upload">📷</span>
         <p>Toca para elegir una foto<br>de tu galería o cámara</p>
@@ -455,18 +208,18 @@
     </div>
   </div>
 
-  <!-- Modal: slideshow TV -->
+  <!-- Modal slideshow TV -->
   <div id="modal-tv-overlay">
     <div id="tv-slideshow"></div>
     <div id="tv-top">Peña el Revuelto</div>
+    <div id="tv-nombre-album"></div>
     <div id="tv-bottom">
-      <span class="tv-titulo">Fiestas de Agosto 2026</span>
+      <span class="tv-titulo" id="tv-titulo-album">Fiestas de Agosto 2026</span>
       <span id="tv-contador"></span>
     </div>
     <button id="btn-salir-tv" onclick="cerrarTV()">✕ Salir</button>
   </div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
@@ -483,149 +236,141 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ── Estado global ──────────────────────────────────────────────────────
-    const fotos = {};           // id → { img, ts }
-    const contComentarios = {}; // id → número
-    let fotoActualId = null;    // id foto abierta en modal
-    let nombreUsuario = localStorage.getItem('pena_nombre') || '';
+    // ── Estado ────────────────────────────────────────────────────────────
+    const fotos = {}, contComentarios = {};
+    let fotoActualId = null, albumActualId = null, albumActualNombre = '';
+    let fotosListener = null;
 
-    // ── Nombre de usuario ──────────────────────────────────────────────────
-    function pedirNombre() {
-      let nombre = prompt('¿Cómo te llamas? (aparecerá en tu comentario)');
-      if (!nombre || !nombre.trim()) nombre = 'Anónimo';
-      nombre = nombre.trim().slice(0, 24);
-      localStorage.setItem('pena_nombre', nombre);
-      nombreUsuario = nombre;
-      return nombre;
-    }
+    const hNombre  = document.getElementById('h-nombre');
+    const hSub     = document.getElementById('h-sub');
+    const grid     = document.getElementById('grid');
+    const vacio    = document.getElementById('vacio');
+    const notifEl  = document.getElementById('nueva-foto-notif');
 
-    // ── Grid de fotos ──────────────────────────────────────────────────────
-    const grid    = document.getElementById('grid');
-    const vacio   = document.getElementById('vacio');
-    const notifEl = document.getElementById('nueva-foto-notif');
-    let primeraFoto = true;
-
-    db.ref('fotos').on('child_added', snap => {
-      const id   = snap.key;
-      const data = snap.val();
-      if (!data || !data.img) return;
-
-      fotos[id] = data;
-      contComentarios[id] = contComentarios[id] || 0;
-      vacio.classList.add('oculto');
-
-      // Crear tarjeta
-      const card = document.createElement('div');
-      card.className = 'foto-card';
-      card.id = 'card-' + id;
-      card.innerHTML = `
-        <img src="${data.img}" alt="Foto" loading="lazy" onclick="abrirFoto('${id}')" />
-        <div class="foto-card-footer">
-          <button class="btn-comentarios" onclick="abrirFoto('${id}')">
-            💬 <span id="cont-${id}">0</span>
-          </button>
-        </div>`;
-      grid.prepend(card);
-
-      // Escuchar comentarios de esta foto
-      db.ref('comentarios/' + id).on('value', snapC => {
-        const n = snapC.numChildren();
-        contComentarios[id] = n;
-        const el = document.getElementById('cont-' + id);
-        if (el) el.textContent = n;
-      });
-
-      // Añadir al slideshow TV
-      agregarSlideTV(data.img);
-
-      if (!primeraFoto) flashNotif();
-      primeraFoto = false;
+    // ── Escuchar álbum activo ──────────────────────────────────────────────
+    db.ref('albumes').on('value', snap => {
+      let activo = null;
+      snap.forEach(c => { if (c.val().activo) activo = { id: c.key, ...c.val() }; });
+      if (!activo && snap.numChildren() > 0) {
+        let ultimo = null;
+        snap.forEach(c => { if (!ultimo || c.val().ts > ultimo.ts) ultimo = { id: c.key, ...c.val() }; });
+        activo = ultimo;
+      }
+      if (activo && activo.id !== albumActualId) {
+        cargarAlbum(activo);
+      } else if (!snap.numChildren()) {
+        hSub.textContent = 'Crea un álbum desde el panel Admin';
+        vacio.querySelector('p').textContent = 'No hay ningún álbum todavía.\nPulsa ⚙ Admin para crear uno.';
+      }
     });
+
+    function cargarAlbum(album) {
+      albumActualId     = album.id;
+      albumActualNombre = album.nombre;
+      hNombre.textContent = album.nombre;
+      hSub.textContent    = album.descripcion || 'Villanueva de Gállego';
+      document.getElementById('album-badge').textContent = 'Álbum: ' + album.nombre;
+      document.getElementById('tv-nombre-album').textContent  = album.descripcion || '';
+      document.getElementById('tv-titulo-album').textContent  = album.nombre;
+
+      // Limpiar
+      grid.innerHTML = '';
+      document.getElementById('tv-slideshow').innerHTML = '';
+      tvSlides = []; tvKb = 0;
+      Object.keys(fotos).forEach(k => delete fotos[k]);
+      vacio.classList.remove('oculto');
+
+      if (fotosListener) { db.ref(fotosListener).off(); }
+      const ruta = 'fotos/' + album.id;
+      fotosListener = ruta;
+      let primera = true;
+
+      db.ref(ruta).on('child_added', snap => {
+        const id = snap.key, data = snap.val();
+        if (!data || !data.img) return;
+        fotos[id] = data;
+        contComentarios[id] = 0;
+        vacio.classList.add('oculto');
+
+        const card = document.createElement('div');
+        card.className = 'foto-card'; card.id = 'card-' + id;
+        card.innerHTML = `
+          <img src="${data.img}" alt="Foto" loading="lazy" onclick="abrirFoto('${id}')" />
+          <div class="foto-card-footer">
+            <button class="btn-comentarios" onclick="abrirFoto('${id}')">💬 <span id="cont-${id}">0</span></button>
+          </div>`;
+        grid.prepend(card);
+
+        db.ref('comentarios/' + album.id + '/' + id).on('value', sc => {
+          const n = sc.numChildren(); contComentarios[id] = n;
+          const el = document.getElementById('cont-' + id); if (el) el.textContent = n;
+        });
+
+        agregarSlideTV(data.img);
+        if (!primera) flashNotif();
+        primera = false;
+      });
+    }
 
     function flashNotif() {
       notifEl.classList.add('visible');
       setTimeout(() => notifEl.classList.remove('visible'), 3000);
     }
 
-    // ── Modal foto + comentarios ───────────────────────────────────────────
-    const modalOverlay  = document.getElementById('modal-overlay');
-    const modalFoto     = document.getElementById('modal-foto');
-    const modalHora     = document.getElementById('modal-hora');
-    const comentWrap    = document.getElementById('modal-comentarios-wrap');
-    const sinComent     = document.getElementById('sin-comentarios');
-    const inputComent   = document.getElementById('input-comentario');
-    const inputNombre   = document.getElementById('input-nombre');
+    // ── Modal foto + comentarios ──────────────────────────────────────────
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalFoto    = document.getElementById('modal-foto');
+    const comentWrap   = document.getElementById('modal-comentarios-wrap');
+    const sinComent    = document.getElementById('sin-comentarios');
+    const inputComent  = document.getElementById('input-comentario');
+    const inputNombre  = document.getElementById('input-nombre');
     let comentariosListener = null;
 
-    // Recuperar nombre guardado
     inputNombre.value = localStorage.getItem('pena_nombre') || '';
 
     function abrirFoto(id) {
       fotoActualId = id;
-      const data = fotos[id];
-      modalFoto.src = data.img;
-      modalHora.textContent = new Date(data.ts).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+      modalFoto.src = fotos[id].img;
+      document.getElementById('modal-hora').textContent =
+        new Date(fotos[id].ts).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
       modalOverlay.classList.add('abierto');
       document.body.style.overflow = 'hidden';
-
-      // Limpiar comentarios anteriores
       comentWrap.querySelectorAll('.comentario').forEach(e => e.remove());
       sinComent.style.display = '';
 
-      // Escuchar comentarios en tiempo real
-      if (comentariosListener) db.ref('comentarios/' + comentariosListener).off();
-      comentariosListener = id;
-      db.ref('comentarios/' + id).on('child_added', snapC => {
-        const c = snapC.val();
-        if (!c) return;
+      if (comentariosListener) db.ref(comentariosListener).off();
+      const ruta = 'comentarios/' + albumActualId + '/' + id;
+      comentariosListener = ruta;
+      db.ref(ruta).on('child_added', sc => {
+        const c = sc.val(); if (!c) return;
         sinComent.style.display = 'none';
-        const div = document.createElement('div');
-        div.className = 'comentario';
+        const div = document.createElement('div'); div.className = 'comentario';
         const hora = new Date(c.ts).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
-        div.innerHTML = `
-          <span class="comentario-autor">${esc(c.autor)}</span>
-          <span class="comentario-texto">${esc(c.texto)}</span>
-          <span class="comentario-hora">${hora}</span>`;
+        div.innerHTML = `<span class="comentario-autor">${esc(c.autor)}</span><span class="comentario-texto">${esc(c.texto)}</span><span class="comentario-hora">${hora}</span>`;
         comentWrap.appendChild(div);
         comentWrap.scrollTop = comentWrap.scrollHeight;
       });
-
       inputComent.focus();
     }
 
-    function cerrarModal(e) {
-      if (e.target === modalOverlay) cerrarModalDirecto();
-    }
+    function cerrarModal(e) { if (e.target === modalOverlay) cerrarModalDirecto(); }
     function cerrarModalDirecto() {
-      modalOverlay.classList.remove('abierto');
-      document.body.style.overflow = '';
-      if (comentariosListener) {
-        db.ref('comentarios/' + comentariosListener).off();
-        comentariosListener = null;
-      }
+      modalOverlay.classList.remove('abierto'); document.body.style.overflow = '';
+      if (comentariosListener) { db.ref(comentariosListener).off(); comentariosListener = null; }
       fotoActualId = null;
     }
 
     function enviarComentario() {
       const texto  = inputComent.value.trim();
       const nombre = inputNombre.value.trim() || 'Anónimo';
-      if (!texto || !fotoActualId) return;
+      if (!texto || !fotoActualId || !albumActualId) return;
       localStorage.setItem('pena_nombre', nombre);
-      db.ref('comentarios/' + fotoActualId).push({ autor: nombre, texto, ts: Date.now() });
+      db.ref('comentarios/' + albumActualId + '/' + fotoActualId).push({ autor: nombre, texto, ts: Date.now() });
       inputComent.value = '';
     }
+    inputComent.addEventListener('keydown', e => { if (e.key === 'Enter') enviarComentario(); });
 
-    inputComent.addEventListener('keydown', e => {
-      if (e.key === 'Enter') enviarComentario();
-    });
-
-    function esc(str) {
-      return String(str)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // ── Modal subir foto ───────────────────────────────────────────────────
+    // ── Modal subir foto ──────────────────────────────────────────────────
     const modalSubirOverlay = document.getElementById('modal-subir-overlay');
     const previewSubir      = document.getElementById('preview-subir');
     const zonaUpload        = document.getElementById('zona-upload');
@@ -634,52 +379,40 @@
     const barraWrap         = document.getElementById('barra-progreso-wrap');
     const barra             = document.getElementById('barra-progreso');
     const fileInput         = document.getElementById('file-input');
-    let archivoSel          = null;
+    let archivoSel = null;
 
     function abrirSubir() {
-      modalSubirOverlay.classList.add('abierto');
-      document.body.style.overflow = 'hidden';
+      if (!albumActualId) { alert('No hay ningún álbum activo. Crea uno desde Admin.'); return; }
+      modalSubirOverlay.classList.add('abierto'); document.body.style.overflow = 'hidden';
     }
-    function cerrarSubir(e) {
-      if (e.target === modalSubirOverlay) cerrarSubirDirecto();
-    }
+    function cerrarSubir(e) { if (e.target === modalSubirOverlay) cerrarSubirDirecto(); }
     function cerrarSubirDirecto() {
-      modalSubirOverlay.classList.remove('abierto');
-      document.body.style.overflow = '';
-      resetSubir();
-    }
-    function resetSubir() {
+      modalSubirOverlay.classList.remove('abierto'); document.body.style.overflow = '';
       previewSubir.style.display = 'none'; previewSubir.src = '';
       zonaUpload.querySelector('.icono-upload').style.display = '';
       zonaUpload.querySelector('p').style.display = '';
       btnEnviarFoto.style.display = 'none';
       statusSubir.textContent = ''; statusSubir.className = '';
       barraWrap.style.display = 'none'; barra.style.width = '0%';
-      btnEnviarFoto.disabled = false;
-      archivoSel = null; fileInput.value = '';
+      btnEnviarFoto.disabled = false; archivoSel = null; fileInput.value = '';
     }
 
     fileInput.addEventListener('change', function () {
-      const file = this.files[0];
-      if (!file) return;
+      const file = this.files[0]; if (!file) return;
       archivoSel = file;
-      previewSubir.src = URL.createObjectURL(file);
-      previewSubir.style.display = 'block';
+      previewSubir.src = URL.createObjectURL(file); previewSubir.style.display = 'block';
       zonaUpload.querySelector('.icono-upload').style.display = 'none';
       zonaUpload.querySelector('p').style.display = 'none';
-      btnEnviarFoto.style.display = 'block';
-      statusSubir.textContent = '';
+      btnEnviarFoto.style.display = 'block'; statusSubir.textContent = '';
     });
 
     function comprimir(file, cb) {
-      const MAX = 900;
-      const img = new Image();
+      const MAX = 900, img = new Image();
       img.onload = () => {
         let w = img.width, h = img.height;
         if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
         else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
         cb(c.toDataURL('image/jpeg', 0.72));
       };
@@ -687,41 +420,34 @@
     }
 
     function enviarFoto() {
-      if (!archivoSel) return;
-      btnEnviarFoto.disabled = true;
-      statusSubir.textContent = 'Comprimiendo...';
+      if (!archivoSel || !albumActualId) return;
+      btnEnviarFoto.disabled = true; statusSubir.textContent = 'Comprimiendo...';
       barraWrap.style.display = 'block'; barra.style.width = '30%';
-
       comprimir(archivoSel, base64 => {
-        barra.style.width = '70%';
-        statusSubir.textContent = 'Enviando...';
-        db.ref('fotos').push({ img: base64, ts: Date.now() })
+        barra.style.width = '70%'; statusSubir.textContent = 'Enviando...';
+        db.ref('fotos/' + albumActualId).push({ img: base64, ts: Date.now() })
           .then(() => {
             barra.style.width = '100%';
             statusSubir.textContent = '¡Enviada! Ya se ve en el muro';
             statusSubir.className = 'ok';
             setTimeout(cerrarSubirDirecto, 1400);
           })
-          .catch(err => {
-            statusSubir.textContent = 'Error: ' + err.message;
-            statusSubir.className = 'err';
-            btnEnviarFoto.disabled = false;
-          });
+          .catch(err => { statusSubir.textContent = 'Error: ' + err.message; statusSubir.className = 'err'; btnEnviarFoto.disabled = false; });
       });
     }
 
-    // ── Slideshow TV ───────────────────────────────────────────────────────
-    const tvModal     = document.getElementById('modal-tv-overlay');
+    // ── Slideshow TV ──────────────────────────────────────────────────────
+    const tvModal = document.getElementById('modal-tv-overlay');
     const tvSlideshow = document.getElementById('tv-slideshow');
     const tvContador  = document.getElementById('tv-contador');
-    const KB_TV       = ['kb0','kb1','kb2','kb3'];
+    const KB_TV = ['kb0','kb1','kb2','kb3'];
     let tvSlides = [], tvKb = 0, tvTimer = null;
 
     function agregarSlideTV(src) {
       const d = document.createElement('div'); d.className = 'tv-slide';
-      const i = document.createElement('img'); i.src = src; i.alt = '';
+      const i = document.createElement('img'); i.src = src;
       d.appendChild(i); tvSlideshow.appendChild(d); tvSlides.push(d);
-      tvContador.textContent = tvSlides.length === 1 ? '1 foto' : tvSlides.length + ' fotos';
+      tvContador.textContent = tvSlides.length + (tvSlides.length === 1 ? ' foto' : ' fotos');
     }
 
     function mostrarSlideTV(idx) {
@@ -729,27 +455,27 @@
       idx = ((idx % tvSlides.length) + tvSlides.length) % tvSlides.length;
       tvSlides.forEach(s => {
         s.classList.remove('activa','kb0','kb1','kb2','kb3');
-        const i = s.querySelector('img');
-        i.style.animation = 'none'; i.offsetHeight; i.style.animation = '';
+        const i = s.querySelector('img'); i.style.animation = 'none'; i.offsetHeight; i.style.animation = '';
       });
       tvSlides[idx].classList.add('activa', KB_TV[tvKb++ % KB_TV.length]);
-      clearTimeout(tvTimer);
-      tvTimer = setTimeout(() => mostrarSlideTV(idx + 1), 6000);
+      clearTimeout(tvTimer); tvTimer = setTimeout(() => mostrarSlideTV(idx + 1), 6000);
     }
 
     function abrirTV() {
-      if (!tvSlides.length) { alert('Aún no hay fotos en el muro.'); return; }
-      tvModal.classList.add('abierto');
-      document.body.style.overflow = 'hidden';
+      if (!tvSlides.length) { alert('Aún no hay fotos en este álbum.'); return; }
+      tvModal.classList.add('abierto'); document.body.style.overflow = 'hidden';
       mostrarSlideTV(0);
       if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
     }
 
     function cerrarTV() {
-      tvModal.classList.remove('abierto');
-      document.body.style.overflow = '';
+      tvModal.classList.remove('abierto'); document.body.style.overflow = '';
       clearTimeout(tvTimer);
       if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen();
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
   </script>
 
