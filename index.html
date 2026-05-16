@@ -67,18 +67,19 @@
 
     .secciones { max-width: 900px; margin: 0 auto; padding: 48px 16px 80px; }
     .secciones-titulo { text-align: center; font-size: 1.1rem; font-weight: 700; color: rgba(255,255,255,.5); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 32px; }
-    .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    @media (min-width: 600px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
+    .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 480px; margin: 0 auto; }
+    @media (min-width: 600px) { .cards-grid { grid-template-columns: repeat(2, 1fr); max-width: 700px; } }
 
     .seccion-card {
-      background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 16px;
-      padding: 28px 16px; text-align: center; text-decoration: none; color: #fff;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
-      transition: transform .2s, border-color .2s, background .2s;
+      background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 12px;
+      padding: 20px 24px; text-decoration: none; color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: border-color .2s, background .2s;
     }
-    .seccion-card:hover { transform: translateY(-4px); border-color: var(--azul); background: rgba(0,71,171,.15); }
-    .seccion-card .icono { font-size: 2.4rem; }
-    .seccion-card .nombre { font-size: .95rem; font-weight: 700; letter-spacing: .03em; }
+    .seccion-card:hover { border-color: var(--azul); background: rgba(0,71,171,.15); }
+    .seccion-card .nombre { font-size: 1rem; font-weight: 700; letter-spacing: .02em; }
+    .seccion-card .flecha { color: rgba(255,255,255,.3); font-size: 1rem; transition: color .2s, transform .2s; }
+    .seccion-card:hover .flecha { color: #fff; transform: translateX(4px); }
   </style>
 </head>
 <body>
@@ -111,20 +112,20 @@
     <p class="secciones-titulo">Descubre la peña</p>
     <div class="cards-grid">
       <a href="fotos.html" class="seccion-card">
-        <span class="icono">📸</span>
         <span class="nombre">Fotos</span>
+        <span class="flecha">→</span>
       </a>
       <a href="noticias.html" class="seccion-card">
-        <span class="icono">📰</span>
         <span class="nombre">Noticias</span>
+        <span class="flecha">→</span>
       </a>
       <a href="junta.html" class="seccion-card">
-        <span class="icono">👥</span>
         <span class="nombre">La Junta</span>
+        <span class="flecha">→</span>
       </a>
       <a href="eventos.html" class="seccion-card">
-        <span class="icono">📅</span>
         <span class="nombre">Eventos</span>
+        <span class="flecha">→</span>
       </a>
     </div>
   </section>
