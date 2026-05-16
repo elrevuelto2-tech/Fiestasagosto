@@ -4,129 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --azul: #0047ab; --rojo: #c0392b; --verde: #1a7a3a; }
+    :root { --azul: #0047ab; --rojo: #c0392b; --verde: #1a7a3a; --naranja: #b35a00; }
 
-    body {
-      font-family: system-ui, sans-serif;
-      background: #0d0d1a; color: #fff;
-      min-height: 100dvh;
-    }
+    body { font-family: system-ui, sans-serif; background: #0d0d1a; color: #fff; min-height: 100dvh; }
 
-    /* ── Login ── */
-    #login-screen {
-      min-height: 100dvh;
-      display: flex; align-items: center; justify-content: center;
-    }
-    #login-box {
-      background: #1a1a2e; border-radius: 20px;
-      padding: 36px 32px; width: min(380px, 94vw);
-      border: 1px solid rgba(255,255,255,0.1);
-      display: flex; flex-direction: column; gap: 16px;
-    }
+    #login-screen { min-height: 100dvh; display: flex; align-items: center; justify-content: center; }
+    #login-box { background: #1a1a2e; border-radius: 20px; padding: 36px 32px; width: min(380px, 94vw); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 16px; }
     #login-box h1 { font-size: 1.3rem; text-align: center; }
     #login-box p  { font-size: 0.85rem; color: rgba(255,255,255,0.5); text-align: center; }
 
-    /* ── Admin panel ── */
     #admin-screen { display: none; }
-    header {
-      background: var(--azul); padding: 14px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 10;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
-    }
+    header { background: var(--azul); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 16px rgba(0,0,0,0.5); }
     header h1 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     header span { font-size: 0.75rem; opacity: 0.7; }
 
     .contenido { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 28px; }
 
-    /* ── Cards ── */
-    .card {
-      background: #1a1a2e; border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.08); padding: 20px;
-    }
+    .card { background: #1a1a2e; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); padding: 20px; }
     .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: rgba(255,255,255,0.9); }
 
-    /* ── Form ── */
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
     .form-group label { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
-    input[type=text], input[type=password], textarea, select {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px; padding: 10px 14px;
-      color: #fff; font-size: 0.9rem; width: 100%;
+    input[type=text], input[type=password], input[type=number], input[type=date], textarea, select {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 0.9rem; width: 100%;
     }
     input:focus, textarea:focus { outline: none; border-color: var(--azul); }
     textarea { resize: vertical; min-height: 70px; }
+    input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .5; }
 
-    /* ── Botones ── */
-    .btn {
-      padding: 10px 20px; border: none; border-radius: 10px;
-      font-size: 0.88rem; font-weight: 700; cursor: pointer;
-      transition: opacity 0.15s;
-    }
+    .btn { padding: 10px 20px; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
     .btn:hover { opacity: 0.85; }
-    .btn-azul  { background: var(--azul); color: #fff; }
-    .btn-verde { background: var(--verde); color: #fff; }
-    .btn-rojo  { background: var(--rojo);  color: #fff; padding: 6px 14px; font-size: 0.78rem; }
-    .btn-gris  { background: rgba(255,255,255,0.12); color: #fff; }
-    .btn-full  { width: 100%; padding: 13px; font-size: 0.95rem; }
+    .btn-azul    { background: var(--azul);   color: #fff; }
+    .btn-verde   { background: var(--verde);  color: #fff; }
+    .btn-rojo    { background: var(--rojo);   color: #fff; padding: 6px 14px; font-size: 0.78rem; }
+    .btn-naranja { background: var(--naranja); color: #fff; padding: 6px 14px; font-size: 0.78rem; }
+    .btn-gris    { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn-full    { width: 100%; padding: 13px; font-size: 0.95rem; }
 
-    /* ── Lista de álbumes ── */
     #lista-albumes { display: flex; flex-direction: column; gap: 10px; }
 
-    .album-item {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px; padding: 14px 16px;
-      display: flex; align-items: center; gap: 12px;
-      flex-wrap: wrap;
-    }
+    .album-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .album-item.activo { border-color: var(--azul); background: rgba(0,71,171,0.15); }
+    .album-item.archivado { opacity: .65; }
 
     .album-info { flex: 1; min-width: 0; }
     .album-nombre { font-weight: 700; font-size: 0.95rem; }
     .album-desc   { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .album-meta   { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 4px; }
 
-    .badge-activo {
-      background: var(--azul); color: #fff;
-      font-size: 0.68rem; font-weight: 700;
-      padding: 3px 8px; border-radius: 20px;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      flex-shrink: 0;
-    }
+    .badge { font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+    .badge-activo    { background: var(--azul); color: #fff; }
+    .badge-archivado { background: rgba(255,255,255,.15); color: rgba(255,255,255,.6); }
 
-    .album-acciones { display: flex; gap: 8px; flex-shrink: 0; }
+    .album-acciones { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 
-    /* Estado vacío */
+    .lista-items { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .item-row { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; }
+    .item-row-body { flex: 1; min-width: 0; }
+    .item-titulo { font-weight: 700; font-size: .92rem; }
+    .item-sub { font-size: .78rem; color: rgba(255,255,255,.45); margin-top: 3px; }
+    .item-acciones { flex-shrink: 0; display: flex; gap: 6px; align-items: center; }
+
     .vacio { text-align: center; color: rgba(255,255,255,0.3); padding: 30px; font-size: 0.9rem; }
 
-    /* Mensaje de estado */
-    #msg {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15);
-      color: #fff; padding: 10px 24px; border-radius: 30px;
-      font-size: 0.88rem; font-weight: 600;
-      opacity: 0; transition: opacity 0.3s; pointer-events: none;
-      z-index: 100; white-space: nowrap;
-    }
+    #msg { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 0.88rem; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; white-space: nowrap; }
     #msg.visible { opacity: 1; }
     #msg.ok  { border-color: #2ecc71; color: #2ecc71; }
     #msg.err { border-color: #e74c3c; color: #e74c3c; }
 
-    /* Enlace a la web */
-    .link-web {
-      display: inline-flex; align-items: center; gap: 6px;
-      color: rgba(255,255,255,0.5); font-size: 0.8rem; text-decoration: none;
-    }
+    .link-web { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.5); font-size: 0.8rem; text-decoration: none; }
     .link-web:hover { color: #fff; }
   </style>
 </head>
 <body>
 
-  <!-- Pantalla de login -->
   <div id="login-screen">
     <div id="login-box">
       <h1>Panel de Administración</h1>
@@ -140,19 +95,17 @@
     </div>
   </div>
 
-  <!-- Panel de admin -->
   <div id="admin-screen">
     <header>
       <div>
         <h1>Panel Admin — Peña el Revuelto</h1>
-        <span>Gestión de álbumes</span>
+        <span>Gestión de contenidos</span>
       </div>
       <a href="index.html" class="link-web">← Ver la web</a>
     </header>
 
     <div class="contenido">
 
-      <!-- Crear álbum -->
       <div class="card">
         <h2>➕ Crear nuevo álbum</h2>
         <div class="form-group">
@@ -172,15 +125,69 @@
         </div>
       </div>
 
-      <!-- Lista de álbumes -->
       <div class="card">
         <h2>📁 Álbumes creados</h2>
-        <div id="lista-albumes">
-          <div class="vacio">Cargando...</div>
-        </div>
+        <div id="lista-albumes"><div class="vacio">Cargando...</div></div>
       </div>
 
-      <!-- Contraseña -->
+      <div class="card">
+        <h2>📰 Noticias</h2>
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" id="not-titulo" placeholder="Título de la noticia" maxlength="100" />
+        </div>
+        <div class="form-group">
+          <label>Texto *</label>
+          <textarea id="not-texto" placeholder="Contenido de la noticia..." rows="4"></textarea>
+        </div>
+        <button class="btn btn-azul" onclick="publicarNoticia()">Publicar noticia</button>
+        <div id="lista-noticias" class="lista-items"></div>
+      </div>
+
+      <div class="card">
+        <h2>👥 La Junta Directiva</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" id="junta-nombre" placeholder="Ej: María García" maxlength="60" />
+          </div>
+          <div class="form-group">
+            <label>Cargo *</label>
+            <input type="text" id="junta-cargo" placeholder="Ej: Presidenta" maxlength="60" />
+          </div>
+        </div>
+        <div class="form-group" style="max-width:140px">
+          <label>Orden (número)</label>
+          <input type="number" id="junta-orden" placeholder="1" min="1" max="99" />
+        </div>
+        <button class="btn btn-azul" onclick="añadirMiembro()">Añadir miembro</button>
+        <div id="lista-junta" class="lista-items"></div>
+      </div>
+
+      <div class="card">
+        <h2>📅 Eventos</h2>
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" id="ev-titulo" placeholder="Nombre del evento" maxlength="100" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label>Fecha *</label>
+            <input type="date" id="ev-fecha" />
+          </div>
+          <div class="form-group">
+            <label>Lugar</label>
+            <input type="text" id="ev-lugar" placeholder="Ej: Plaza Mayor" maxlength="100" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="ev-desc" placeholder="Detalles del evento..." rows="3"></textarea>
+        </div>
+        <button class="btn btn-azul" onclick="crearEvento()">Crear evento</button>
+        <div id="lista-eventos" class="lista-items"></div>
+      </div>
+
       <div class="card">
         <h2>🔑 Cambiar contraseña</h2>
         <div style="display:flex;gap:10px">
@@ -195,25 +202,27 @@
 
   <div id="msg"></div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey:            "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
-      authDomain:        "fotosfiestas-4609c.firebaseapp.com",
-      databaseURL:       "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId:         "fotosfiestas-4609c",
-      storageBucket:     "fotosfiestas-4609c.firebasestorage.app",
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
       messagingSenderId: "204866897359",
-      appId:             "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ── Contraseña ─────────────────────────────────────────────────────────
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     const PASS_DEFAULT = 'revuelto2026';
     const passGuardada = () => localStorage.getItem('pena_admin_pass') || PASS_DEFAULT;
 
@@ -223,14 +232,15 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('admin-screen').style.display = 'block';
         cargarAlbumes();
+        cargarNoticias();
+        cargarJunta();
+        cargarEventos();
       } else {
         document.getElementById('login-error').style.display = 'block';
       }
     }
 
-    document.getElementById('input-pass').addEventListener('keydown', e => {
-      if (e.key === 'Enter') login();
-    });
+    document.getElementById('input-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
     function cambiarPass() {
       const nueva = document.getElementById('nueva-pass').value.trim();
@@ -240,7 +250,7 @@
       mostrarMsg('Contraseña guardada', 'ok');
     }
 
-    // ── Álbumes ────────────────────────────────────────────────────────────
+    // ── Álbumes ─────────────────────────────────────────────────────────────
     const albumes = {};
 
     function cargarAlbumes() {
@@ -251,27 +261,29 @@
         const items = [];
         snap.forEach(child => { items.push({ id: child.key, ...child.val() }); });
         items.sort((a, b) => b.ts - a.ts);
-        items.forEach(a => {
-          albumes[a.id] = a;
-          lista.appendChild(renderAlbum(a));
-        });
+        items.forEach(a => { albumes[a.id] = a; lista.appendChild(renderAlbum(a)); });
       });
     }
 
     function renderAlbum(a) {
       const div = document.createElement('div');
-      div.className = 'album-item' + (a.activo ? ' activo' : '');
+      div.className = 'album-item' + (a.activo ? ' activo' : '') + (a.archivado ? ' archivado' : '');
       div.id = 'album-item-' + a.id;
       const fecha = new Date(a.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+      let badge = '';
+      if (a.activo) badge = '<span class="badge badge-activo">Activo</span>';
+      else if (a.archivado) badge = '<span class="badge badge-archivado">Archivado</span>';
       div.innerHTML = `
         <div class="album-info">
           <div class="album-nombre">${esc(a.nombre)}</div>
           ${a.descripcion ? `<div class="album-desc">${esc(a.descripcion)}</div>` : ''}
           <div class="album-meta">Creado el ${fecha}</div>
         </div>
-        ${a.activo ? '<span class="badge-activo">Activo</span>' : ''}
+        ${badge}
         <div class="album-acciones">
-          ${!a.activo ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
+          ${!a.activo && !a.archivado ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
+          ${a.archivado ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
+          ${!a.archivado ? `<button class="btn btn-naranja" onclick="archivarAlbum('${a.id}')">Archivar</button>` : ''}
           <button class="btn btn-gris" id="btn-dl-${a.id}" onclick="descargarAlbum('${a.id}', '${esc(a.nombre)}')">⬇ Fotos</button>
           <button class="btn btn-rojo" onclick="eliminarAlbum('${a.id}', '${esc(a.nombre)}')">Eliminar</button>
         </div>`;
@@ -283,14 +295,7 @@
       const desc   = document.getElementById('nueva-desc').value.trim();
       const activo = document.getElementById('nuevo-activo').checked;
       if (!nombre) { mostrarMsg('El nombre es obligatorio', 'err'); return; }
-
-      const promesas = [];
-
-      // Si se activa, desactivar el actual primero
-      if (activo) {
-        promesas.push(desactivarTodos());
-      }
-
+      const promesas = activo ? [desactivarTodos()] : [];
       Promise.all(promesas).then(() => {
         const ref  = db.ref('albumes').push();
         const data = { nombre, ts: Date.now() };
@@ -307,8 +312,14 @@
 
     function activarAlbum(id) {
       desactivarTodos().then(() => {
-        return db.ref('albumes/' + id + '/activo').set(true);
+        return db.ref('albumes/' + id).update({ activo: true, archivado: null });
       }).then(() => mostrarMsg('Álbum activado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function archivarAlbum(id) {
+      db.ref('albumes/' + id).update({ archivado: true, activo: null })
+        .then(() => mostrarMsg('Álbum archivado', 'ok'))
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
@@ -358,16 +369,159 @@
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
+    // ── Noticias ─────────────────────────────────────────────────────────────
+    function publicarNoticia() {
+      const titulo = document.getElementById('not-titulo').value.trim();
+      const texto  = document.getElementById('not-texto').value.trim();
+      if (!titulo || !texto) { mostrarMsg('Título y texto son obligatorios', 'err'); return; }
+      db.ref('noticias').push({ titulo, texto, ts: Date.now() })
+        .then(() => {
+          document.getElementById('not-titulo').value = '';
+          document.getElementById('not-texto').value  = '';
+          mostrarMsg('Noticia publicada', 'ok');
+        }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function cargarNoticias() {
+      db.ref('noticias').orderByChild('ts').on('value', snap => {
+        const lista = document.getElementById('lista-noticias');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay noticias.</div>'; return; }
+        const items = [];
+        snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+        items.sort((a, b) => b.ts - a.ts);
+        items.forEach(n => {
+          const div = document.createElement('div');
+          div.className = 'item-row';
+          const fecha = new Date(n.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+          div.innerHTML = `
+            <div class="item-row-body">
+              <div class="item-titulo">${esc(n.titulo)}</div>
+              <div class="item-sub">${fecha}</div>
+            </div>
+            <div class="item-acciones">
+              <button class="btn btn-rojo" onclick="eliminarNoticia('${n.id}')">Eliminar</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function eliminarNoticia(id) {
+      if (!confirm('¿Eliminar esta noticia?')) return;
+      db.ref('noticias/' + id).remove()
+        .then(() => mostrarMsg('Noticia eliminada', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Junta ────────────────────────────────────────────────────────────────
+    let proximoOrden = 1;
+
+    function añadirMiembro() {
+      const nombre = document.getElementById('junta-nombre').value.trim();
+      const cargo  = document.getElementById('junta-cargo').value.trim();
+      const orden  = parseInt(document.getElementById('junta-orden').value) || proximoOrden;
+      if (!nombre || !cargo) { mostrarMsg('Nombre y cargo son obligatorios', 'err'); return; }
+      db.ref('junta').push({ nombre, cargo, orden, ts: Date.now() })
+        .then(() => {
+          document.getElementById('junta-nombre').value = '';
+          document.getElementById('junta-cargo').value  = '';
+          document.getElementById('junta-orden').value  = '';
+          mostrarMsg('Miembro añadido', 'ok');
+        }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function cargarJunta() {
+      db.ref('junta').on('value', snap => {
+        const lista = document.getElementById('lista-junta');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay miembros.</div>'; proximoOrden = 1; return; }
+        const items = [];
+        snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+        items.sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || (a.ts ?? 0) - (b.ts ?? 0));
+        proximoOrden = items.length + 1;
+        items.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'item-row';
+          div.innerHTML = `
+            <div class="item-row-body">
+              <div class="item-titulo">${esc(m.nombre)}</div>
+              <div class="item-sub">${esc(m.cargo)} · orden ${m.orden ?? '–'}</div>
+            </div>
+            <div class="item-acciones">
+              <button class="btn btn-rojo" onclick="eliminarMiembro('${m.id}')">Eliminar</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function eliminarMiembro(id) {
+      if (!confirm('¿Eliminar este miembro?')) return;
+      db.ref('junta/' + id).remove()
+        .then(() => mostrarMsg('Miembro eliminado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Eventos ──────────────────────────────────────────────────────────────
+    const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+    function crearEvento() {
+      const titulo = document.getElementById('ev-titulo').value.trim();
+      const fechaStr = document.getElementById('ev-fecha').value;
+      const lugar = document.getElementById('ev-lugar').value.trim();
+      const descripcion = document.getElementById('ev-desc').value.trim();
+      if (!titulo || !fechaStr) { mostrarMsg('Título y fecha son obligatorios', 'err'); return; }
+      const fecha = new Date(fechaStr).getTime();
+      db.ref('eventos').push({ titulo, fecha, lugar, descripcion, ts: Date.now() })
+        .then(() => {
+          document.getElementById('ev-titulo').value = '';
+          document.getElementById('ev-fecha').value  = '';
+          document.getElementById('ev-lugar').value  = '';
+          document.getElementById('ev-desc').value   = '';
+          mostrarMsg('Evento creado', 'ok');
+        }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function cargarEventos() {
+      db.ref('eventos').on('value', snap => {
+        const lista = document.getElementById('lista-eventos');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay eventos.</div>'; return; }
+        const items = [];
+        snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+        items.sort((a, b) => a.fecha - b.fecha);
+        items.forEach(e => {
+          const div = document.createElement('div');
+          div.className = 'item-row';
+          const d = new Date(e.fecha);
+          const fechaStr = d.getDate() + ' ' + MESES[d.getMonth()] + ' ' + d.getFullYear();
+          div.innerHTML = `
+            <div class="item-row-body">
+              <div class="item-titulo">${esc(e.titulo)}</div>
+              <div class="item-sub">${fechaStr}${e.lugar ? ' · ' + esc(e.lugar) : ''}</div>
+            </div>
+            <div class="item-acciones">
+              <button class="btn btn-rojo" onclick="eliminarEvento('${e.id}')">Eliminar</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function eliminarEvento(id) {
+      if (!confirm('¿Eliminar este evento?')) return;
+      db.ref('eventos/' + id).remove()
+        .then(() => mostrarMsg('Evento eliminado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
     function mostrarMsg(texto, tipo) {
       const el = document.getElementById('msg');
       el.textContent = texto;
       el.className = 'visible ' + (tipo || '');
       setTimeout(() => { el.className = ''; }, 3000);
-    }
-
-    function esc(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
   </script>
 </body>

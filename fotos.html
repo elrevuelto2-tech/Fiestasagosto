@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fotos — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; --radio: 14px; }
+    html { scroll-behavior: smooth; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; }
+    .nav-logo { color: #fff; font-weight: 900; font-size: clamp(.85rem,2.5vw,1.05rem); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: rgba(255,255,255,.8); text-decoration: none; padding: 7px 13px; border-radius: 8px; font-size: .85rem; font-weight: 600; transition: background .2s; }
+    .nav-link:hover, .nav-link.activa { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-burger { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 620px) {
+      .nav-links { display: none; position: absolute; top: 56px; left: 0; right: 0; background: var(--azul); flex-direction: column; padding: 8px; z-index: 99; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+      .nav-links.open { display: flex; }
+      .nav-burger { display: block; }
+    }
+
+    .page-header { max-width: 1000px; margin: 0 auto; padding: 32px 16px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .page-header h1 { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 900; }
+    .btn-admin { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 10px; font-size: .82rem; font-weight: 700; transition: background .2s; }
+    .btn-admin:hover { background: rgba(255,255,255,.2); }
+
+    .contenido { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+
+    .album-header { background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .album-header-info { flex: 1; }
+    .album-nombre-actual { font-size: 1.2rem; font-weight: 800; }
+    .album-desc-actual { font-size: .85rem; color: rgba(255,255,255,.5); margin-top: 4px; }
+    .sin-album { text-align: center; padding: 60px 20px; color: rgba(255,255,255,.4); }
+    .sin-album p { font-size: 1.1rem; margin-bottom: 8px; }
+    .sin-album small { font-size: .85rem; }
+
+    .upload-area {
+      background: #1a1a2e; border: 2px dashed rgba(255,255,255,.2); border-radius: 16px;
+      padding: 32px 20px; text-align: center; cursor: pointer; margin-bottom: 24px;
+      transition: border-color .2s, background .2s;
+    }
+    .upload-area:hover, .upload-area.drag { border-color: var(--azul); background: rgba(0,71,171,.1); }
+    .upload-area p { color: rgba(255,255,255,.6); font-size: .95rem; }
+    .upload-area small { color: rgba(255,255,255,.35); font-size: .8rem; display: block; margin-top: 6px; }
+    #file-input { display: none; }
+
+    .progress-bar-wrap { background: rgba(255,255,255,.1); border-radius: 8px; height: 8px; overflow: hidden; margin: 12px 0; display: none; }
+    .progress-bar { height: 100%; background: var(--azul); border-radius: 8px; transition: width .2s; width: 0%; }
+
+    .fotos-grid { columns: 2; column-gap: 10px; }
+    @media (min-width: 480px) { .fotos-grid { columns: 3; } }
+    @media (min-width: 700px) { .fotos-grid { columns: 4; } }
+    @media (min-width: 900px) { .fotos-grid { columns: 5; } }
+
+    .foto-item { break-inside: avoid; margin-bottom: 10px; border-radius: 10px; overflow: hidden; position: relative; cursor: pointer; }
+    .foto-item img { width: 100%; display: block; transition: transform .25s; }
+    .foto-item:hover img { transform: scale(1.03); }
+    .foto-item .foto-del { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.6); border: none; color: #fff; width: 26px; height: 26px; border-radius: 50%; font-size: .9rem; cursor: pointer; display: none; align-items: center; justify-content: center; }
+    .foto-item:hover .foto-del { display: flex; }
+
+    .grid-vacio { text-align: center; padding: 60px 20px; color: rgba(255,255,255,.3); font-size: .95rem; }
+
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.95); z-index: 200; display: none; align-items: center; justify-content: center; flex-direction: column; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 92vw; max-height: 82vh; border-radius: 10px; object-fit: contain; }
+    .lb-close { position: absolute; top: 16px; right: 20px; font-size: 2rem; color: #fff; cursor: pointer; background: none; border: none; }
+    .lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); font-size: 2.5rem; color: rgba(255,255,255,.7); cursor: pointer; background: none; border: none; padding: 0 12px; user-select: none; }
+    .lb-prev { left: 4px; }
+    .lb-next { right: 4px; }
+    .lb-counter { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.5); font-size: .85rem; }
+
+    .comentarios-section { margin-top: 32px; background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 20px; }
+    .comentarios-section h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .comentario-form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .comentario-form input { flex: 1; min-width: 120px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); border-radius: 10px; padding: 10px 14px; color: #fff; font-size: .9rem; }
+    .comentario-form input:focus { outline: none; border-color: var(--azul); }
+    .btn { padding: 10px 20px; border: none; border-radius: 10px; font-size: .88rem; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-azul { background: var(--azul); color: #fff; }
+    .comentario-item { border-top: 1px solid rgba(255,255,255,.06); padding: 12px 0; display: flex; align-items: flex-start; gap: 10px; }
+    .comentario-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--azul); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; flex-shrink: 0; }
+    .comentario-body { flex: 1; }
+    .comentario-autor { font-weight: 700; font-size: .88rem; }
+    .comentario-texto { font-size: .88rem; color: rgba(255,255,255,.75); margin-top: 2px; }
+    .comentario-fecha { font-size: .72rem; color: rgba(255,255,255,.35); margin-top: 3px; }
+    .comentarios-vacio { color: rgba(255,255,255,.3); font-size: .9rem; text-align: center; padding: 20px; }
+
+    .tv-btn-wrap { text-align: center; margin: 28px 0 8px; }
+    .btn-tv { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); color: #fff; padding: 12px 28px; border-radius: 12px; font-size: .9rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: background .2s; }
+    .btn-tv:hover { background: rgba(255,255,255,.15); }
+
+    .slideshow { display: none; position: fixed; inset: 0; background: #000; z-index: 300; align-items: center; justify-content: center; }
+    .slideshow.open { display: flex; }
+    .slideshow img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .ss-exit { position: absolute; top: 16px; right: 20px; font-size: 1.8rem; color: rgba(255,255,255,.6); cursor: pointer; background: none; border: none; }
+
+    .archivos-section { margin-top: 48px; }
+    .archivos-section h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; color: rgba(255,255,255,.8); }
+    .archivos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+    .archivo-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 18px; cursor: pointer; transition: border-color .2s, background .2s; }
+    .archivo-card:hover { border-color: var(--azul); background: rgba(0,71,171,.1); }
+    .archivo-card.abierto { border-color: var(--azul); }
+    .archivo-nombre { font-weight: 700; font-size: .95rem; }
+    .archivo-desc { font-size: .78rem; color: rgba(255,255,255,.45); margin-top: 4px; }
+    .archivo-fotos-container { display: none; margin-top: 20px; background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 18px; }
+    .archivo-fotos-container.open { display: block; }
+    .archivo-fotos-titulo { font-weight: 700; margin-bottom: 14px; font-size: .95rem; }
+    .archivo-fotos-grid { columns: 2; column-gap: 8px; }
+    @media (min-width: 480px) { .archivo-fotos-grid { columns: 3; } }
+    @media (min-width: 700px) { .archivo-fotos-grid { columns: 4; } }
+    .archivo-foto-item { break-inside: avoid; margin-bottom: 8px; border-radius: 8px; overflow: hidden; cursor: pointer; }
+    .archivo-foto-item img { width: 100%; display: block; transition: transform .2s; }
+    .archivo-foto-item:hover img { transform: scale(1.03); }
+    .archivos-vacio { color: rgba(255,255,255,.3); font-size: .9rem; padding: 12px 0; }
+
+    #msg { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; border: 1px solid rgba(255,255,255,.15); color: #fff; padding: 10px 24px; border-radius: 30px; font-size: .88rem; font-weight: 600; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 400; white-space: nowrap; }
+    #msg.visible { opacity: 1; }
+    #msg.ok  { border-color: #2ecc71; color: #2ecc71; }
+    #msg.err { border-color: #e74c3c; color: #e74c3c; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="fotos.html" class="nav-link activa">Fotos</a>
+        <a href="noticias.html" class="nav-link">Noticias</a>
+        <a href="junta.html" class="nav-link">La Junta</a>
+        <a href="eventos.html" class="nav-link">Eventos</a>
+      </div>
+      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>📸 Fotos</h1>
+    <a href="admin.html" class="btn-admin">⚙ Admin</a>
+  </div>
+
+  <div class="contenido">
+
+    <div id="album-header-wrap"></div>
+
+    <div id="upload-wrap" style="display:none">
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+        <p>📷 Toca para subir fotos</p>
+        <small>JPG / PNG / HEIC — máximo 10 MB por foto</small>
+        <div class="progress-bar-wrap" id="progress-wrap">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+      <input type="file" id="file-input" accept="image/*" multiple />
+    </div>
+
+    <div id="fotos-grid" class="fotos-grid"></div>
+    <div id="grid-vacio" class="grid-vacio" style="display:none">Aún no hay fotos en este álbum.</div>
+
+    <div class="tv-btn-wrap" id="tv-btn-wrap" style="display:none">
+      <button class="btn-tv" onclick="iniciarSlideshow()">📺 Modo TV</button>
+    </div>
+
+    <div id="comentarios-wrap"></div>
+
+    <div class="archivos-section" id="archivos-section">
+      <h2>📁 Álbumes anteriores</h2>
+      <div id="archivos-grid" class="archivos-grid"></div>
+      <div id="archivos-vacio" class="archivos-vacio" style="display:none">No hay álbumes archivados.</div>
+    </div>
+
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lb-close" onclick="cerrarLightbox()">✕</button>
+    <button class="lb-prev" onclick="lbNav(-1)">‹</button>
+    <img id="lb-img" src="" alt="" />
+    <button class="lb-next" onclick="lbNav(1)">›</button>
+    <div class="lb-counter" id="lb-counter"></div>
+  </div>
+
+  <div class="slideshow" id="slideshow">
+    <button class="ss-exit" onclick="detenerSlideshow()">✕ Salir</button>
+    <img id="ss-img" src="" alt="" />
+  </div>
+
+  <div id="msg"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    let albumActivo = null;
+    let fotosActuales = [];
+    let lbIndex = 0;
+    let ssTimer = null;
+    let ssIndex = 0;
+
+    db.ref('albumes').orderByChild('activo').equalTo(true).on('value', snap => {
+      if (!snap.exists()) {
+        mostrarSinAlbum();
+        return;
+      }
+      snap.forEach(child => {
+        albumActivo = { id: child.key, ...child.val() };
+      });
+      mostrarAlbumActivo();
+    });
+
+    function mostrarSinAlbum() {
+      document.getElementById('album-header-wrap').innerHTML = `
+        <div class="sin-album">
+          <p>No hay ningún álbum activo en este momento.</p>
+          <small>El administrador activará uno próximamente.</small>
+        </div>`;
+      document.getElementById('upload-wrap').style.display = 'none';
+      document.getElementById('tv-btn-wrap').style.display = 'none';
+    }
+
+    function mostrarAlbumActivo() {
+      const hw = document.getElementById('album-header-wrap');
+      hw.innerHTML = `
+        <div class="album-header">
+          <div class="album-header-info">
+            <div class="album-nombre-actual">${esc(albumActivo.nombre)}</div>
+            ${albumActivo.descripcion ? `<div class="album-desc-actual">${esc(albumActivo.descripcion)}</div>` : ''}
+          </div>
+        </div>`;
+      document.getElementById('upload-wrap').style.display = 'block';
+      cargarFotos(albumActivo.id);
+      cargarComentarios(albumActivo.id);
+    }
+
+    function cargarFotos(albumId) {
+      db.ref('fotos/' + albumId).on('value', snap => {
+        const grid = document.getElementById('fotos-grid');
+        grid.innerHTML = '';
+        fotosActuales = [];
+        if (!snap.exists()) {
+          document.getElementById('grid-vacio').style.display = 'block';
+          document.getElementById('tv-btn-wrap').style.display = 'none';
+          return;
+        }
+        document.getElementById('grid-vacio').style.display = 'none';
+        document.getElementById('tv-btn-wrap').style.display = 'block';
+        snap.forEach(child => {
+          const f = { id: child.key, ...child.val() };
+          fotosActuales.push(f);
+          const div = document.createElement('div');
+          div.className = 'foto-item';
+          div.innerHTML = `<img src="${esc(f.img)}" alt="Foto" loading="lazy" onclick="abrirLightbox(${fotosActuales.length - 1})" />
+            <button class="foto-del" title="Eliminar" onclick="eliminarFoto('${f.id}', '${albumId}', event)">✕</button>`;
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    function cargarComentarios(albumId) {
+      const wrap = document.getElementById('comentarios-wrap');
+      wrap.innerHTML = `
+        <div class="comentarios-section">
+          <h2>💬 Comentarios</h2>
+          <div class="comentario-form">
+            <input type="text" id="com-autor" placeholder="Tu nombre" maxlength="30" style="max-width:160px" />
+            <input type="text" id="com-texto" placeholder="Escribe un comentario..." maxlength="200" style="flex:1" />
+            <button class="btn btn-azul" onclick="enviarComentario('${albumId}')">Enviar</button>
+          </div>
+          <div id="lista-comentarios"></div>
+        </div>`;
+
+      document.getElementById('com-texto').addEventListener('keydown', e => {
+        if (e.key === 'Enter') enviarComentario(albumId);
+      });
+
+      db.ref('comentarios/' + albumId).orderByChild('ts').on('value', snap => {
+        const lista = document.getElementById('lista-comentarios');
+        if (!lista) return;
+        lista.innerHTML = '';
+        if (!snap.exists()) {
+          lista.innerHTML = '<div class="comentarios-vacio">Sé el primero en comentar</div>';
+          return;
+        }
+        const items = [];
+        snap.forEach(c => items.push(c.val()));
+        items.reverse();
+        items.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'comentario-item';
+          const inicial = (c.autor || '?')[0].toUpperCase();
+          const fecha = new Date(c.ts).toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+          div.innerHTML = `
+            <div class="comentario-avatar">${esc(inicial)}</div>
+            <div class="comentario-body">
+              <div class="comentario-autor">${esc(c.autor || 'Anónimo')}</div>
+              <div class="comentario-texto">${esc(c.texto)}</div>
+              <div class="comentario-fecha">${fecha}</div>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function enviarComentario(albumId) {
+      const autor = (document.getElementById('com-autor').value || '').trim();
+      const texto = (document.getElementById('com-texto').value || '').trim();
+      if (!texto) { mostrarMsg('Escribe algo primero', 'err'); return; }
+      db.ref('comentarios/' + albumId).push({ autor: autor || 'Anónimo', texto, ts: Date.now() })
+        .then(() => {
+          document.getElementById('com-texto').value = '';
+          mostrarMsg('Comentario publicado', 'ok');
+        })
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag'));
+    uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('drag'); subirArchivos(e.dataTransfer.files); });
+    fileInput.addEventListener('change', () => subirArchivos(fileInput.files));
+
+    function subirArchivos(files) {
+      if (!albumActivo) { mostrarMsg('No hay álbum activo', 'err'); return; }
+      const arr = Array.from(files).filter(f => f.type.startsWith('image/'));
+      if (!arr.length) { mostrarMsg('Selecciona imágenes', 'err'); return; }
+      const wrap = document.getElementById('progress-wrap');
+      const bar = document.getElementById('progress-bar');
+      wrap.style.display = 'block';
+      let done = 0;
+      arr.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) { mostrarMsg(`${file.name} supera los 10 MB`, 'err'); done++; if (done === arr.length) { wrap.style.display = 'none'; fileInput.value = ''; } return; }
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX = 1400;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            db.ref('fotos/' + albumActivo.id).push({ img: dataUrl, ts: Date.now() })
+              .then(() => {
+                done++;
+                bar.style.width = (done / arr.length * 100) + '%';
+                if (done === arr.length) { setTimeout(() => { wrap.style.display = 'none'; bar.style.width = '0%'; }, 600); mostrarMsg(arr.length === 1 ? 'Foto subida' : arr.length + ' fotos subidas', 'ok'); fileInput.value = ''; }
+              })
+              .catch(err => { mostrarMsg('Error: ' + err.message, 'err'); done++; if (done === arr.length) { wrap.style.display = 'none'; fileInput.value = ''; } });
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function eliminarFoto(fotoId, albumId, e) {
+      e.stopPropagation();
+      if (!confirm('¿Eliminar esta foto?')) return;
+      db.ref('fotos/' + albumId + '/' + fotoId).remove()
+        .then(() => mostrarMsg('Foto eliminada', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function abrirLightbox(idx) {
+      lbIndex = idx;
+      actualizarLightbox();
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function cerrarLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+
+    function actualizarLightbox() {
+      document.getElementById('lb-img').src = fotosActuales[lbIndex].img;
+      document.getElementById('lb-counter').textContent = (lbIndex + 1) + ' / ' + fotosActuales.length;
+    }
+
+    function lbNav(dir) {
+      lbIndex = (lbIndex + dir + fotosActuales.length) % fotosActuales.length;
+      actualizarLightbox();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('lightbox').classList.contains('open')) {
+        if (e.key === 'ArrowRight') lbNav(1);
+        else if (e.key === 'ArrowLeft') lbNav(-1);
+        else if (e.key === 'Escape') cerrarLightbox();
+      }
+      if (document.getElementById('slideshow').classList.contains('open') && e.key === 'Escape') {
+        detenerSlideshow();
+      }
+    });
+
+    function iniciarSlideshow() {
+      if (!fotosActuales.length) return;
+      ssIndex = 0;
+      document.getElementById('ss-img').src = fotosActuales[ssIndex].img;
+      document.getElementById('slideshow').classList.add('open');
+      ssTimer = setInterval(() => {
+        ssIndex = (ssIndex + 1) % fotosActuales.length;
+        document.getElementById('ss-img').src = fotosActuales[ssIndex].img;
+      }, 4000);
+    }
+
+    function detenerSlideshow() {
+      clearInterval(ssTimer);
+      document.getElementById('slideshow').classList.remove('open');
+    }
+
+    db.ref('albumes').orderByChild('archivado').equalTo(true).on('value', snap => {
+      const grid = document.getElementById('archivos-grid');
+      const vacio = document.getElementById('archivos-vacio');
+      grid.innerHTML = '';
+      if (!snap.exists()) {
+        vacio.style.display = 'block';
+        return;
+      }
+      vacio.style.display = 'none';
+      const items = [];
+      snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+      items.sort((a, b) => b.ts - a.ts);
+      items.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'archivo-card';
+        card.id = 'archivo-card-' + a.id;
+        card.innerHTML = `<div class="archivo-nombre">📁 ${esc(a.nombre)}</div>${a.descripcion ? `<div class="archivo-desc">${esc(a.descripcion)}</div>` : ''}`;
+        card.addEventListener('click', () => toggleArchivoFotos(a));
+        grid.appendChild(card);
+
+        const container = document.createElement('div');
+        container.className = 'archivo-fotos-container';
+        container.id = 'archivo-fotos-' + a.id;
+        container.innerHTML = `<div class="archivo-fotos-titulo">${esc(a.nombre)}</div><div class="archivo-fotos-grid" id="af-grid-${a.id}"><p style="color:rgba(255,255,255,.3);font-size:.85rem">Cargando fotos...</p></div>`;
+        grid.parentElement.insertBefore(container, grid.nextSibling);
+        grid.parentElement.insertBefore(container, card.nextSibling);
+      });
+    });
+
+    let archivoAbierto = null;
+
+    function toggleArchivoFotos(album) {
+      const container = document.getElementById('archivo-fotos-' + album.id);
+      const card = document.getElementById('archivo-card-' + album.id);
+      if (archivoAbierto === album.id) {
+        container.classList.remove('open');
+        card.classList.remove('abierto');
+        archivoAbierto = null;
+        return;
+      }
+      if (archivoAbierto) {
+        document.getElementById('archivo-fotos-' + archivoAbierto).classList.remove('open');
+        document.getElementById('archivo-card-' + archivoAbierto).classList.remove('abierto');
+      }
+      archivoAbierto = album.id;
+      container.classList.add('open');
+      card.classList.add('abierto');
+      const afGrid = document.getElementById('af-grid-' + album.id);
+      afGrid.innerHTML = '<p style="color:rgba(255,255,255,.3);font-size:.85rem">Cargando fotos...</p>';
+      db.ref('fotos/' + album.id).once('value').then(snap => {
+        afGrid.innerHTML = '';
+        if (!snap.exists()) { afGrid.innerHTML = '<p style="color:rgba(255,255,255,.3);font-size:.85rem">Este álbum no tiene fotos.</p>'; return; }
+        const fotos = [];
+        snap.forEach(c => fotos.push({ id: c.key, ...c.val() }));
+        fotos.forEach((f, idx) => {
+          const div = document.createElement('div');
+          div.className = 'archivo-foto-item';
+          div.innerHTML = `<img src="${esc(f.img)}" alt="Foto" loading="lazy" />`;
+          div.addEventListener('click', () => abrirLightboxArchivo(fotos, idx));
+          afGrid.appendChild(div);
+        });
+      });
+    }
+
+    function abrirLightboxArchivo(fotos, idx) {
+      fotosActuales = fotos;
+      abrirLightbox(idx);
+    }
+
+    function mostrarMsg(texto, tipo) {
+      const el = document.getElementById('msg');
+      el.textContent = texto;
+      el.className = 'visible ' + (tipo || '');
+      setTimeout(() => { el.className = ''; }, 3000);
+    }
+  </script>
+</body>
+</html>
