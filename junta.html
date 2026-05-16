@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Junta — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; --radio: 14px; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; }
+    .nav-logo { color: #fff; font-weight: 900; font-size: clamp(.85rem,2.5vw,1.05rem); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: rgba(255,255,255,.8); text-decoration: none; padding: 7px 13px; border-radius: 8px; font-size: .85rem; font-weight: 600; transition: background .2s; }
+    .nav-link:hover, .nav-link.activa { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-burger { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 620px) {
+      .nav-links { display: none; position: absolute; top: 56px; left: 0; right: 0; background: var(--azul); flex-direction: column; padding: 8px; z-index: 99; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+      .nav-links.open { display: flex; }
+      .nav-burger { display: block; }
+    }
+
+    .contenido { max-width: 700px; margin: 0 auto; padding: 32px 16px 80px; }
+    .page-title { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 900; margin-bottom: 32px; }
+
+    .junta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .miembro-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 20px; text-align: center; }
+    .miembro-cargo { font-size: .78rem; font-weight: 700; color: var(--azul); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .miembro-nombre { font-size: 1.05rem; font-weight: 800; }
+
+    .vacio { text-align: center; color: rgba(255,255,255,.3); padding: 60px 20px; font-size: .95rem; }
+    .cargando { text-align: center; color: rgba(255,255,255,.3); padding: 60px 20px; font-size: .9rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="fotos.html" class="nav-link">Fotos</a>
+        <a href="noticias.html" class="nav-link">Noticias</a>
+        <a href="junta.html" class="nav-link activa">La Junta</a>
+        <a href="eventos.html" class="nav-link">Eventos</a>
+      </div>
+      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+
+  <div class="contenido">
+    <h1 class="page-title">👥 La Junta Directiva</h1>
+    <div id="lista" class="cargando">Cargando...</div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    db.ref('junta').on('value', snap => {
+      const lista = document.getElementById('lista');
+      lista.innerHTML = '';
+      if (!snap.exists()) {
+        lista.innerHTML = '<div class="vacio">La junta aún no está configurada.</div>';
+        return;
+      }
+      const items = [];
+      snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+      items.sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || (a.ts ?? 0) - (b.ts ?? 0));
+      const grid = document.createElement('div');
+      grid.className = 'junta-grid';
+      items.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'miembro-card';
+        div.innerHTML = `
+          <div class="miembro-cargo">${esc(m.cargo)}</div>
+          <div class="miembro-nombre">${esc(m.nombre)}</div>`;
+        grid.appendChild(div);
+      });
+      lista.appendChild(grid);
+    });
+  </script>
+</body>
+</html>
