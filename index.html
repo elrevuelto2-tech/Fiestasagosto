@@ -26,7 +26,7 @@
     /* ── Fondo difuminado ── */
     #fondo {
       position: fixed; inset: 0; z-index: 0;
-      background-image: url('foto-grupo.jpg');
+      background-image: url('https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/foto-grupo.jpg');
       background-size: cover; background-position: center;
       filter: blur(18px) brightness(0.25);
       transform: scale(1.05);
@@ -212,10 +212,20 @@
 
     /* Input comentario */
     #modal-input-wrap {
-      padding: 12px 16px;
+      padding: 10px 16px 14px;
       border-top: 1px solid rgba(255,255,255,0.08);
-      display: flex; gap: 8px; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
     }
+    #modal-input-fila { display: flex; gap: 8px; }
+    #input-nombre {
+      width: 100px; flex-shrink: 0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 10px 12px;
+      color: #fff; font-size: 0.85rem;
+    }
+    #input-nombre::placeholder { color: rgba(255,255,255,0.3); }
+    #input-nombre:focus { outline: none; border-color: var(--azul); }
     #input-comentario {
       flex: 1; background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.15);
@@ -224,11 +234,10 @@
     }
     #input-comentario::placeholder { color: rgba(255,255,255,0.35); }
     #input-comentario:focus { outline: none; border-color: var(--azul); }
-
     #btn-enviar-comentario {
       background: var(--azul); color: #fff; border: none;
       border-radius: 10px; padding: 10px 16px;
-      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer; flex-shrink: 0;
       transition: background 0.2s;
     }
     #btn-enviar-comentario:hover { background: var(--azul-oscuro); }
@@ -381,7 +390,7 @@
 
     <!-- Banner decorativo -->
     <div id="banner-deco">
-      <img src="banner.jpg" alt="Peña el Revuelto" onerror="document.getElementById('banner-deco').classList.add('sin-imagen')" />
+      <img src="https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/banner.jpg" alt="Peña el Revuelto" onerror="document.getElementById('banner-deco').classList.add('sin-imagen')" />
     </div>
 
     <!-- Estado vacío -->
@@ -411,8 +420,11 @@
         <div id="sin-comentarios">Sé el primero en comentar</div>
       </div>
       <div id="modal-input-wrap">
-        <input id="input-comentario" type="text" placeholder="Escribe un comentario..." maxlength="200" />
-        <button id="btn-enviar-comentario" onclick="enviarComentario()">Enviar</button>
+        <div id="modal-input-fila">
+          <input id="input-nombre" type="text" placeholder="Tu nombre" maxlength="24" />
+          <input id="input-comentario" type="text" placeholder="Escribe un comentario..." maxlength="200" />
+          <button id="btn-enviar-comentario" onclick="enviarComentario()">Enviar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -535,7 +547,11 @@
     const comentWrap    = document.getElementById('modal-comentarios-wrap');
     const sinComent     = document.getElementById('sin-comentarios');
     const inputComent   = document.getElementById('input-comentario');
+    const inputNombre   = document.getElementById('input-nombre');
     let comentariosListener = null;
+
+    // Recuperar nombre guardado
+    inputNombre.value = localStorage.getItem('pena_nombre') || '';
 
     function abrirFoto(id) {
       fotoActualId = id;
@@ -584,14 +600,11 @@
     }
 
     function enviarComentario() {
-      const texto = inputComent.value.trim();
+      const texto  = inputComent.value.trim();
+      const nombre = inputNombre.value.trim() || 'Anónimo';
       if (!texto || !fotoActualId) return;
-      if (!nombreUsuario) pedirNombre();
-      db.ref('comentarios/' + fotoActualId).push({
-        autor: nombreUsuario,
-        texto: texto,
-        ts: Date.now()
-      });
+      localStorage.setItem('pena_nombre', nombre);
+      db.ref('comentarios/' + fotoActualId).push({ autor: nombre, texto, ts: Date.now() });
       inputComent.value = '';
     }
 
