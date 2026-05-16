@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Generar iconos PWA</title></head>
+<body style="font-family:sans-serif;padding:20px;background:#111;color:#fff">
+  <h2>Generador de iconos — Peña el Revuelto</h2>
+  <p>Pulsa el botón para descargar los dos iconos PNG necesarios.</p>
+  <button onclick="generar()" style="padding:14px 28px;background:#0047ab;color:#fff;border:none;border-radius:10px;font-size:1rem;cursor:pointer;margin-top:12px">
+    Descargar iconos
+  </button>
+  <div id="resultado" style="margin-top:20px"></div>
+
+  <script>
+    function dibujar(size) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+
+      // Fondo azul
+      ctx.fillStyle = '#0047ab';
+      ctx.fillRect(0, 0, size, size);
+
+      // Círculo blanco central
+      const r = size * 0.38;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fill();
+
+      // Letras PR
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${size * 0.3}px system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PR', size/2, size/2);
+
+      // Línea inferior
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillRect(size*0.15, size*0.72, size*0.7, size*0.03);
+
+      return c;
+    }
+
+    function descargar(canvas, nombre) {
+      const a = document.createElement('a');
+      a.download = nombre;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    function generar() {
+      const res = document.getElementById('resultado');
+      res.innerHTML = '';
+
+      [192, 512].forEach(size => {
+        const c = dibujar(size);
+        c.style.cssText = `width:${Math.min(size,96)}px;height:${Math.min(size,96)}px;border-radius:18px;margin-right:12px;vertical-align:middle`;
+        res.appendChild(c);
+        setTimeout(() => descargar(c, `icon-${size}.png`), size === 192 ? 100 : 400);
+      });
+
+      res.insertAdjacentHTML('beforeend', '<p style="margin-top:12px;color:#aaa">✓ Descargados icon-192.png e icon-512.png — súbelos a GitHub junto al index.html</p>');
+    }
+  </script>
+</body>
+</html>
