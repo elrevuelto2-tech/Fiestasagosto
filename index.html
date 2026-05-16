@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peña el Revuelto — Fiestas de Agosto 2026</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #000;
+      font-family: system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Slideshow de fondo ── */
+    #slideshow {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+    .slide.activa { opacity: 1; }
+    .slide img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .slide.activa img { animation: kenburns 8s ease-in-out forwards; }
+    @keyframes kenburns {
+      0%   { transform: scale(1)    translate(0,0); }
+      100% { transform: scale(1.12) translate(-2%,-1.5%); }
+    }
+    .slide.activa.kb1 img { animation-name: kb1; }
+    @keyframes kb1 {
+      0%   { transform: scale(1.08) translate(2%,1%); }
+      100% { transform: scale(1)    translate(0,0); }
+    }
+    .slide.activa.kb2 img { animation-name: kb2; }
+    @keyframes kb2 {
+      0%   { transform: scale(1)    translate(2%,-1%); }
+      100% { transform: scale(1.1)  translate(-1%,1%); }
+    }
+    .slide.activa.kb3 img { animation-name: kb3; }
+    @keyframes kb3 {
+      0%   { transform: scale(1.1)  translate(-2%,1%); }
+      100% { transform: scale(1)    translate(1%,-1%); }
+    }
+
+    /* ── Pantalla de espera con fotos de la peña ── */
+    #espera {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    #espera.oculto { display: none; }
+
+    .espera-foto {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.55);
+    }
+
+    /* Overlay de texto sobre las fotos */
+    #espera-texto {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #espera-texto p {
+      background: rgba(0,0,0,0.55);
+      color: rgba(255,255,255,0.85);
+      font-size: clamp(0.9rem, 2vw, 1.3rem);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      text-align: center;
+      padding: 12px 28px;
+      border-radius: 30px;
+      backdrop-filter: blur(6px);
+    }
+    #espera-texto.oculto { display: none; }
+
+    /* ── Barra superior ── */
+    #top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 20;
+      background: #0047ab;
+      color: #fff;
+      text-align: center;
+      font-size: clamp(1.1rem, 3vw, 2rem);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
+
+    /* ── Barra inferior fija ── */
+    #bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 20;
+      padding: 16px 20px 20px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(to top,
+        rgba(0,0,0,0.88) 0%,
+        rgba(0,0,0,0.5) 55%,
+        transparent 100%);
+      pointer-events: none;
+    }
+    #bottom-bar .titulo {
+      font-size: clamp(0.85rem, 2vw, 1.3rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #fff;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+    }
+    #bottom-bar .contador {
+      font-size: clamp(0.75rem, 1.5vw, 1rem);
+      color: rgba(255,255,255,0.7);
+      white-space: nowrap;
+    }
+
+    /* ── Botones flotantes (esquina sup. derecha) ── */
+    #controles {
+      position: fixed;
+      top: 60px; right: 12px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-ctrl {
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      padding: 8px 13px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+    }
+    .btn-ctrl:hover { background: rgba(0,71,171,0.7); border-color: #fff; }
+    #btn-musica.sonando { border-color: #ffd000; color: #ffd000; }
+
+    /* ── Panel de subida ── */
+    #panel {
+      position: fixed;
+      bottom: 56px; left: 50%;
+      transform: translateX(-50%) translateY(0);
+      z-index: 25;
+      width: min(420px, 94vw);
+      background: rgba(10,10,10,0.82);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+    #panel.oculto {
+      transform: translateX(-50%) translateY(calc(100% + 70px));
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #upload-area {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border: 2px dashed rgba(255,255,255,0.3);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    #upload-area:active { border-color: #fff; }
+    #upload-area .icon { font-size: 2.5rem; }
+    #upload-area p { color: rgba(255,255,255,0.6); font-size: 0.9rem; text-align: center; }
+
+    #preview-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+      display: none;
+      border-radius: 12px;
+    }
+
+    #file-input { display: none; }
+
+    #btn-enviar {
+      width: 100%;
+      padding: 15px;
+      background: #0047ab;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+    #btn-enviar:disabled { background: #334d75; cursor: not-allowed; }
+
+    .progress-wrap {
+      width: 100%;
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      height: 6px;
+      display: none;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      background: #4a9eff;
+      width: 0%;
+      transition: width 0.2s;
+      border-radius: 6px;
+    }
+
+    #status {
+      font-size: 0.9rem;
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      min-height: 20px;
+    }
+    #status.ok  { color: #5ddb5d; font-weight: 700; }
+    #status.err { color: #ff6b6b; }
+
+    /* ── Botón abrir/cerrar panel (centro abajo) ── */
+    #btn-toggle {
+      position: fixed;
+      bottom: 10px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      background: #0047ab;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 10px 26px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      pointer-events: all;
+    }
+
+    /* ── Notificación nueva foto (esquina inferior derecha) ── */
+    #nueva-foto {
+      position: fixed;
+      bottom: 24px; right: 16px;
+      z-index: 50;
+      background: #0047ab;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      line-height: 1.3;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    #nueva-foto.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Slideshow de fondo -->
+  <div id="slideshow"></div>
+
+  <!-- Pantalla de espera con fotos de la peña -->
+  <div id="espera">
+    <img class="espera-foto" src="foto-grupo.jpg" alt="Peña el Revuelto" />
+    <img class="espera-foto" src="banner.jpg"     alt="Banner Peña el Revuelto" />
+  </div>
+  <div id="espera-texto">
+    <p>📸 Sube tus fotos y aparecerán aquí</p>
+  </div>
+
+  <!-- Barra superior -->
+  <div id="top-bar">Peña el Revuelto</div>
+
+  <!-- Barra inferior -->
+  <div id="bottom-bar">
+    <span class="titulo">Fiestas de Agosto 2026</span>
+    <span class="contador" id="contador-fotos"></span>
+  </div>
+
+  <!-- Botones flotantes -->
+  <div id="controles">
+    <button class="btn-ctrl" id="btn-pantalla" onclick="togglePantallaCompleta()">&#x26F6; Pantalla completa</button>
+    <button class="btn-ctrl" id="btn-musica"   onclick="toggleMusica()">&#9834; Música</button>
+  </div>
+
+  <!-- Panel de subida -->
+  <div id="panel">
+    <div id="upload-area" onclick="document.getElementById('file-input').click()">
+      <span class="icon">📷</span>
+      <p>Toca para elegir una foto<br>de tu galería o cámara</p>
+      <img id="preview-img" alt="Vista previa" />
+    </div>
+    <input type="file" id="file-input" accept="image/*" />
+    <div class="progress-wrap" id="progress-wrap">
+      <div id="progress-bar"></div>
+    </div>
+    <button id="btn-enviar" onclick="enviarFoto()">Enviar a la pantalla</button>
+    <p id="status"></p>
+  </div>
+
+  <!-- Botón abrir/cerrar panel -->
+  <button id="btn-toggle" onclick="togglePanel()">📷 Subir foto</button>
+
+  <!-- Flash nueva foto -->
+  <div id="nueva-foto">¡Nueva foto!</div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain:        "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL:       "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:         "fotosfiestas-4609c",
+      storageBucket:     "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId:             "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ── Slideshow ──────────────────────────────────────────────
+    const KB       = ['kb0', 'kb1', 'kb2', 'kb3'];
+    const DURACION = 6000;
+    let slides     = [], kbIdx = 0, timer = null, primeraVez = true;
+
+    const slideshowEl  = document.getElementById('slideshow');
+    const esperaEl     = document.getElementById('espera');
+    const esperaTexto  = document.getElementById('espera-texto');
+    const contadorEl   = document.getElementById('contador-fotos');
+    const nuevaFotoEl  = document.getElementById('nueva-foto');
+
+    function agregarSlide(imgData) {
+      const div = document.createElement('div');
+      div.className = 'slide';
+      const img = document.createElement('img');
+      img.src = imgData;
+      img.alt = 'Foto de la fiesta';
+      div.appendChild(img);
+      slideshowEl.appendChild(div);
+      slides.push(div);
+    }
+
+    function mostrarSlide(idx) {
+      if (!slides.length) return;
+      idx = ((idx % slides.length) + slides.length) % slides.length;
+      slides.forEach(s => {
+        s.classList.remove('activa', 'kb0', 'kb1', 'kb2', 'kb3');
+        const i = s.querySelector('img');
+        i.style.animation = 'none'; i.offsetHeight; i.style.animation = '';
+      });
+      slides[idx].classList.add('activa', KB[kbIdx++ % KB.length]);
+      clearTimeout(timer);
+      timer = setTimeout(() => mostrarSlide(idx + 1), DURACION);
+    }
+
+    db.ref('fotos').on('child_added', function (snap) {
+      const data = snap.val();
+      if (!data || !data.img) return;
+      agregarSlide(data.img);
+      const n = slides.length;
+      contadorEl.textContent = n === 1 ? '1 foto' : n + ' fotos';
+      esperaEl.classList.add('oculto');
+      esperaTexto.classList.add('oculto');
+      if (primeraVez) { primeraVez = false; mostrarSlide(0); }
+      else { flashNuevaFoto(); }
+    });
+
+    function flashNuevaFoto() {
+      nuevaFotoEl.classList.add('visible');
+      setTimeout(() => nuevaFotoEl.classList.remove('visible'), 3000);
+    }
+
+    // ── Panel de subida ────────────────────────────────────────
+    const panelEl     = document.getElementById('panel');
+    const btnToggleEl = document.getElementById('btn-toggle');
+    const fileInput   = document.getElementById('file-input');
+    const previewImg  = document.getElementById('preview-img');
+    const btnEnviar   = document.getElementById('btn-enviar');
+    const statusEl    = document.getElementById('status');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressBar  = document.getElementById('progress-bar');
+    let panelAbierto  = false;
+    let archivoSel    = null;
+
+    function togglePanel() {
+      panelAbierto = !panelAbierto;
+      panelEl.classList.toggle('oculto', !panelAbierto);
+      btnToggleEl.textContent = panelAbierto ? '✕ Cerrar' : '📷 Subir foto';
+    }
+
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      archivoSel = file;
+      previewImg.src = URL.createObjectURL(file);
+      previewImg.style.display = 'block';
+      document.querySelector('#upload-area .icon').style.display = 'none';
+      document.querySelector('#upload-area p').style.display = 'none';
+      btnEnviar.style.display = 'block';
+      statusEl.textContent = '';
+      statusEl.className = '';
+    });
+
+    function comprimir(file, cb) {
+      const MAX = 900;
+      const img = new Image();
+      img.onload = function () {
+        let w = img.width, h = img.height;
+        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX; }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        cb(c.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = URL.createObjectURL(file);
+    }
+
+    function enviarFoto() {
+      if (!archivoSel) return;
+      btnEnviar.disabled = true;
+      statusEl.textContent = 'Comprimiendo...';
+      statusEl.className = '';
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '30%';
+
+      comprimir(archivoSel, function (base64) {
+        progressBar.style.width = '70%';
+        statusEl.textContent = 'Enviando...';
+        db.ref('fotos').push({ img: base64, ts: Date.now() })
+          .then(function () {
+            progressBar.style.width = '100%';
+            statusEl.textContent = '¡Foto enviada! Ya se ve en la pantalla';
+            statusEl.className = 'ok';
+            setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 800);
+            btnEnviar.style.display = 'none';
+            previewImg.style.display = 'none';
+            document.querySelector('#upload-area .icon').style.display = '';
+            document.querySelector('#upload-area p').style.display = '';
+            archivoSel = null;
+            fileInput.value = '';
+            btnEnviar.disabled = false;
+          })
+          .catch(function (err) {
+            statusEl.textContent = 'Error: ' + err.message;
+            statusEl.className = 'err';
+            btnEnviar.disabled = false;
+          });
+      });
+    }
+
+    // ── Pantalla completa ──────────────────────────────────────
+    function togglePantallaCompleta() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        document.getElementById('btn-pantalla').textContent = '✕ Salir pantalla completa';
+      } else {
+        document.exitFullscreen();
+        document.getElementById('btn-pantalla').textContent = '⛶ Pantalla completa';
+      }
+    }
+
+    // ── Música ────────────────────────────────────────────────
+    // Pon el nombre de tu MP3 aquí, p.ej: 'musica.mp3'
+    const MUSICA_URL = '';
+    let audio = null, musicaSonando = false;
+    const btnMusica = document.getElementById('btn-musica');
+
+    function toggleMusica() {
+      if (!MUSICA_URL) {
+        alert('Para añadir música, pon un MP3 en la misma carpeta y escribe su nombre en MUSICA_URL dentro del HTML.');
+        return;
+      }
+      if (!audio) { audio = new Audio(MUSICA_URL); audio.loop = true; audio.volume = 0.45; }
+      if (musicaSonando) {
+        audio.pause(); musicaSonando = false;
+        btnMusica.textContent = '♪ Música'; btnMusica.classList.remove('sonando');
+      } else {
+        audio.play(); musicaSonando = true;
+        btnMusica.textContent = '■ Pausar'; btnMusica.classList.add('sonando');
+      }
+    }
+  </script>
+
+</body>
+</html>
