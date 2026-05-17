@@ -4,84 +4,139 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin — Peña el Revuelto</title>
-  <meta name="theme-color" content="#0047ab" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --azul: #0047ab; --rojo: #c0392b; --verde: #1a7a3a; --naranja: #b35a00; }
+    :root { --azul: #0047ab; --rojo: #c0392b; --verde: #1a7a3a; }
 
-    body { font-family: system-ui, sans-serif; background: #0d0d1a; color: #fff; min-height: 100dvh; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0d0d1a; color: #fff;
+      min-height: 100dvh;
+    }
 
-    #login-screen { min-height: 100dvh; display: flex; align-items: center; justify-content: center; }
-    #login-box { background: #1a1a2e; border-radius: 20px; padding: 36px 32px; width: min(380px, 94vw); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 16px; }
+    /* ── Login ── */
+    #login-screen {
+      min-height: 100dvh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #login-box {
+      background: #1a1a2e; border-radius: 20px;
+      padding: 36px 32px; width: min(380px, 94vw);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex; flex-direction: column; gap: 16px;
+    }
     #login-box h1 { font-size: 1.3rem; text-align: center; }
     #login-box p  { font-size: 0.85rem; color: rgba(255,255,255,0.5); text-align: center; }
 
+    /* ── Admin panel ── */
     #admin-screen { display: none; }
-    header { background: var(--azul); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 16px rgba(0,0,0,0.5); }
+    header {
+      background: var(--azul); padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
     header h1 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     header span { font-size: 0.75rem; opacity: 0.7; }
 
     .contenido { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 28px; }
 
-    .card { background: #1a1a2e; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); padding: 20px; }
+    /* ── Cards ── */
+    .card {
+      background: #1a1a2e; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08); padding: 20px;
+    }
     .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: rgba(255,255,255,0.9); }
 
+    /* ── Form ── */
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
     .form-group label { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
-    input[type=text], input[type=password], input[type=number], input[type=date], textarea, select {
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 0.9rem; width: 100%;
+    input[type=text], input[type=password], textarea, select {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 10px 14px;
+      color: #fff; font-size: 0.9rem; width: 100%;
     }
     input:focus, textarea:focus { outline: none; border-color: var(--azul); }
     textarea { resize: vertical; min-height: 70px; }
-    input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .5; }
 
-    .btn { padding: 10px 20px; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+    /* ── Botones ── */
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s;
+    }
     .btn:hover { opacity: 0.85; }
-    .btn-azul    { background: var(--azul);   color: #fff; }
-    .btn-verde   { background: var(--verde);  color: #fff; }
-    .btn-rojo    { background: var(--rojo);   color: #fff; padding: 6px 14px; font-size: 0.78rem; }
-    .btn-naranja { background: var(--naranja); color: #fff; padding: 6px 14px; font-size: 0.78rem; }
-    .btn-gris    { background: rgba(255,255,255,0.12); color: #fff; }
-    .btn-full    { width: 100%; padding: 13px; font-size: 0.95rem; }
+    .btn-azul  { background: var(--azul); color: #fff; }
+    .btn-verde { background: var(--verde); color: #fff; }
+    .btn-rojo  { background: var(--rojo);  color: #fff; padding: 6px 14px; font-size: 0.78rem; }
+    .btn-gris  { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn-full  { width: 100%; padding: 13px; font-size: 0.95rem; }
 
+    /* ── Lista de álbumes ── */
     #lista-albumes { display: flex; flex-direction: column; gap: 10px; }
 
-    .album-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .album-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+    }
     .album-item.activo { border-color: var(--azul); background: rgba(0,71,171,0.15); }
-    .album-item.archivado { opacity: .65; }
 
     .album-info { flex: 1; min-width: 0; }
     .album-nombre { font-weight: 700; font-size: 0.95rem; }
     .album-desc   { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .album-meta   { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 4px; }
 
-    .badge { font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
-    .badge-activo    { background: var(--azul); color: #fff; }
-    .badge-archivado { background: rgba(255,255,255,.15); color: rgba(255,255,255,.6); }
+    .badge-activo {
+      background: var(--azul); color: #fff;
+      font-size: 0.68rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .badge-archivado {
+      background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6);
+      font-size: 0.68rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
 
-    .album-acciones { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+    /* Lista genérica de items (noticias, junta, eventos) */
+    .lista-items { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
 
-    .lista-items { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-    .item-row { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; }
-    .item-row-body { flex: 1; min-width: 0; }
-    .item-titulo { font-weight: 700; font-size: .92rem; }
-    .item-sub { font-size: .78rem; color: rgba(255,255,255,.45); margin-top: 3px; }
-    .item-acciones { flex-shrink: 0; display: flex; gap: 6px; align-items: center; }
+    .album-acciones { display: flex; gap: 8px; flex-shrink: 0; }
 
+    /* Estado vacío */
     .vacio { text-align: center; color: rgba(255,255,255,0.3); padding: 30px; font-size: 0.9rem; }
 
-    #msg { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 0.88rem; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; white-space: nowrap; }
+    /* Mensaje de estado */
+    #msg {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; padding: 10px 24px; border-radius: 30px;
+      font-size: 0.88rem; font-weight: 600;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+      z-index: 100; white-space: nowrap;
+    }
     #msg.visible { opacity: 1; }
     #msg.ok  { border-color: #2ecc71; color: #2ecc71; }
     #msg.err { border-color: #e74c3c; color: #e74c3c; }
 
-    .link-web { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.5); font-size: 0.8rem; text-decoration: none; }
+    /* Enlace a la web */
+    .link-web {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.5); font-size: 0.8rem; text-decoration: none;
+    }
     .link-web:hover { color: #fff; }
   </style>
 </head>
 <body>
 
+  <!-- Pantalla de login -->
   <div id="login-screen">
     <div id="login-box">
       <h1>Panel de Administración</h1>
@@ -95,17 +150,19 @@
     </div>
   </div>
 
+  <!-- Panel de admin -->
   <div id="admin-screen">
     <header>
       <div>
         <h1>Panel Admin — Peña el Revuelto</h1>
-        <span>Gestión de contenidos</span>
+        <span>Gestión de álbumes</span>
       </div>
       <a href="index.html" class="link-web">← Ver la web</a>
     </header>
 
     <div class="contenido">
 
+      <!-- Crear álbum -->
       <div class="card">
         <h2>➕ Crear nuevo álbum</h2>
         <div class="form-group">
@@ -125,12 +182,65 @@
         </div>
       </div>
 
+      <!-- Lista de álbumes -->
       <div class="card">
         <h2>📁 Álbumes creados</h2>
-        <div id="lista-albumes"><div class="vacio">Cargando...</div></div>
+        <div id="lista-albumes">
+          <div class="vacio">Cargando...</div>
+        </div>
       </div>
 
-      <div class="card">
+      <!-- Conócenos / Entrevistas -->
+      <div class="card" id="card-entrevistas" style="display:none">
+        <h2>Conócenos — Entrevistas</h2>
+        <div class="form-group">
+          <label>Nombre del entrevistado *</label>
+          <input type="text" id="e-miembro" placeholder="Nombre del entrevistado" maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label>Título del vídeo *</label>
+          <input type="text" id="e-titulo" placeholder="Título del vídeo" maxlength="120" />
+        </div>
+        <div class="form-group">
+          <label>ID o URL de YouTube</label>
+          <input type="text" id="e-youtubeid" placeholder="ej: dQw4w9WgXcQ o https://youtu.be/dQw4w9WgXcQ" maxlength="200" />
+        </div>
+        <div class="form-group">
+          <label>Descripción (opcional)</label>
+          <textarea id="e-descripcion" placeholder="Descripción breve..."></textarea>
+        </div>
+        <button class="btn btn-azul" onclick="guardarEntrevista()">Añadir entrevista</button>
+        <div id="lista-entrevistas" style="margin-top:20px;display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- Hazte Socio -->
+      <div class="card" id="card-socio" style="display:none">
+        <h2>Hazte Socio — Contenido</h2>
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="s-titulo" placeholder="Hazte Socio" maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="s-descripcion" placeholder="Descripción de la página..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Cuota</label>
+          <input type="text" id="s-cuota" placeholder="Ej: 20€ / año" maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label>Beneficios (un beneficio por línea)</label>
+          <textarea id="s-beneficios" placeholder="Acceso a eventos exclusivos&#10;Descuentos en actividades" style="min-height:100px"></textarea>
+        </div>
+        <button class="btn btn-azul" onclick="guardarConfigSocio()">Guardar</button>
+        <div style="margin-top:28px">
+          <h2 style="margin-bottom:14px">Solicitudes de membresía</h2>
+          <div id="lista-solicitudes" style="display:flex;flex-direction:column;gap:10px"><div class="vacio">Cargando...</div></div>
+        </div>
+      </div>
+
+      <!-- Noticias -->
+      <div class="card" id="card-noticias" style="display:none">
         <h2>📰 Noticias</h2>
         <div class="form-group">
           <label>Título *</label>
@@ -144,27 +254,29 @@
         <div id="lista-noticias" class="lista-items"></div>
       </div>
 
-      <div class="card">
-        <h2>👥 La Junta Directiva</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="form-group">
+      <!-- La Junta -->
+      <div class="card" id="card-junta" style="display:none">
+        <h2>👥 La Junta</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px">
+          <div class="form-group" style="margin:0">
             <label>Nombre *</label>
-            <input type="text" id="junta-nombre" placeholder="Ej: María García" maxlength="60" />
+            <input type="text" id="j-nombre" placeholder="Nombre completo" maxlength="80" />
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin:0">
             <label>Cargo *</label>
-            <input type="text" id="junta-cargo" placeholder="Ej: Presidenta" maxlength="60" />
+            <input type="text" id="j-cargo" placeholder="Ej: Presidente, Vocal..." maxlength="60" />
           </div>
-        </div>
-        <div class="form-group" style="max-width:140px">
-          <label>Orden (número)</label>
-          <input type="number" id="junta-orden" placeholder="1" min="1" max="99" />
+          <div class="form-group" style="margin:0">
+            <label>Orden</label>
+            <input type="number" id="j-orden" placeholder="1" min="1" style="width:70px" />
+          </div>
         </div>
         <button class="btn btn-azul" onclick="añadirMiembro()">Añadir miembro</button>
         <div id="lista-junta" class="lista-items"></div>
       </div>
 
-      <div class="card">
+      <!-- Eventos -->
+      <div class="card" id="card-eventos" style="display:none">
         <h2>📅 Eventos</h2>
         <div class="form-group">
           <label>Título *</label>
@@ -177,17 +289,18 @@
           </div>
           <div class="form-group">
             <label>Lugar</label>
-            <input type="text" id="ev-lugar" placeholder="Ej: Plaza Mayor" maxlength="100" />
+            <input type="text" id="ev-lugar" placeholder="Lugar del evento" maxlength="100" />
           </div>
         </div>
         <div class="form-group">
           <label>Descripción</label>
-          <textarea id="ev-desc" placeholder="Detalles del evento..." rows="3"></textarea>
+          <textarea id="ev-desc" placeholder="Descripción del evento..." rows="3"></textarea>
         </div>
         <button class="btn btn-azul" onclick="crearEvento()">Crear evento</button>
         <div id="lista-eventos" class="lista-items"></div>
       </div>
 
+      <!-- Contraseña -->
       <div class="card">
         <h2>🔑 Cambiar contraseña</h2>
         <div style="display:flex;gap:10px">
@@ -202,27 +315,25 @@
 
   <div id="msg"></div>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
-      authDomain: "fotosfiestas-4609c.firebaseapp.com",
-      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "fotosfiestas-4609c",
-      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      apiKey:            "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain:        "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL:       "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:         "fotosfiestas-4609c",
+      storageBucket:     "fotosfiestas-4609c.firebasestorage.app",
       messagingSenderId: "204866897359",
-      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+      appId:             "1:204866897359:web:f8c1cc6a309eb2c2923eba"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function esc(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
+    // ── Contraseña ─────────────────────────────────────────────────────────
     const PASS_DEFAULT = 'revuelto2026';
     const passGuardada = () => localStorage.getItem('pena_admin_pass') || PASS_DEFAULT;
 
@@ -232,6 +343,14 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('admin-screen').style.display = 'block';
         cargarAlbumes();
+        document.getElementById('card-entrevistas').style.display = '';
+        document.getElementById('card-socio').style.display = '';
+        document.getElementById('card-noticias').style.display = '';
+        document.getElementById('card-junta').style.display = '';
+        document.getElementById('card-eventos').style.display = '';
+        cargarEntrevistas();
+        cargarConfigSocio();
+        cargarSolicitudes();
         cargarNoticias();
         cargarJunta();
         cargarEventos();
@@ -240,7 +359,9 @@
       }
     }
 
-    document.getElementById('input-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+    document.getElementById('input-pass').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
 
     function cambiarPass() {
       const nueva = document.getElementById('nueva-pass').value.trim();
@@ -250,7 +371,7 @@
       mostrarMsg('Contraseña guardada', 'ok');
     }
 
-    // ── Álbumes ─────────────────────────────────────────────────────────────
+    // ── Álbumes ────────────────────────────────────────────────────────────
     const albumes = {};
 
     function cargarAlbumes() {
@@ -261,29 +382,29 @@
         const items = [];
         snap.forEach(child => { items.push({ id: child.key, ...child.val() }); });
         items.sort((a, b) => b.ts - a.ts);
-        items.forEach(a => { albumes[a.id] = a; lista.appendChild(renderAlbum(a)); });
+        items.forEach(a => {
+          albumes[a.id] = a;
+          lista.appendChild(renderAlbum(a));
+        });
       });
     }
 
     function renderAlbum(a) {
       const div = document.createElement('div');
-      div.className = 'album-item' + (a.activo ? ' activo' : '') + (a.archivado ? ' archivado' : '');
+      div.className = 'album-item' + (a.activo ? ' activo' : '');
       div.id = 'album-item-' + a.id;
       const fecha = new Date(a.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
-      let badge = '';
-      if (a.activo) badge = '<span class="badge badge-activo">Activo</span>';
-      else if (a.archivado) badge = '<span class="badge badge-archivado">Archivado</span>';
       div.innerHTML = `
         <div class="album-info">
           <div class="album-nombre">${esc(a.nombre)}</div>
           ${a.descripcion ? `<div class="album-desc">${esc(a.descripcion)}</div>` : ''}
           <div class="album-meta">Creado el ${fecha}</div>
         </div>
-        ${badge}
+        ${a.activo ? '<span class="badge-activo">Activo</span>' : ''}
+        ${a.archivado ? '<span class="badge-archivado">Archivado</span>' : ''}
         <div class="album-acciones">
           ${!a.activo && !a.archivado ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
-          ${a.archivado ? `<button class="btn btn-verde" onclick="activarAlbum('${a.id}')">Activar</button>` : ''}
-          ${!a.archivado ? `<button class="btn btn-naranja" onclick="archivarAlbum('${a.id}')">Archivar</button>` : ''}
+          ${!a.archivado ? `<button class="btn btn-gris" onclick="archivarAlbum('${a.id}')">Archivar</button>` : `<button class="btn btn-gris" onclick="desarchivarAlbum('${a.id}')">Restaurar</button>`}
           <button class="btn btn-gris" id="btn-dl-${a.id}" onclick="descargarAlbum('${a.id}', '${esc(a.nombre)}')">⬇ Fotos</button>
           <button class="btn btn-rojo" onclick="eliminarAlbum('${a.id}', '${esc(a.nombre)}')">Eliminar</button>
         </div>`;
@@ -295,7 +416,14 @@
       const desc   = document.getElementById('nueva-desc').value.trim();
       const activo = document.getElementById('nuevo-activo').checked;
       if (!nombre) { mostrarMsg('El nombre es obligatorio', 'err'); return; }
-      const promesas = activo ? [desactivarTodos()] : [];
+
+      const promesas = [];
+
+      // Si se activa, desactivar el actual primero
+      if (activo) {
+        promesas.push(desactivarTodos());
+      }
+
       Promise.all(promesas).then(() => {
         const ref  = db.ref('albumes').push();
         const data = { nombre, ts: Date.now() };
@@ -312,14 +440,8 @@
 
     function activarAlbum(id) {
       desactivarTodos().then(() => {
-        return db.ref('albumes/' + id).update({ activo: true, archivado: null });
+        return db.ref('albumes/' + id + '/activo').set(true);
       }).then(() => mostrarMsg('Álbum activado', 'ok'))
-        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
-    }
-
-    function archivarAlbum(id) {
-      db.ref('albumes/' + id).update({ archivado: true, activo: null })
-        .then(() => mostrarMsg('Álbum archivado', 'ok'))
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
@@ -369,7 +491,23 @@
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
-    // ── Noticias ─────────────────────────────────────────────────────────────
+    function archivarAlbum(id) {
+      if (!confirm('¿Archivar este álbum? Seguirá visible en la sección de álbumes archivados.')) return;
+      const updates = {};
+      updates['albumes/' + id + '/archivado'] = true;
+      updates['albumes/' + id + '/activo'] = null;
+      db.ref().update(updates)
+        .then(() => mostrarMsg('Álbum archivado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function desarchivarAlbum(id) {
+      db.ref('albumes/' + id + '/archivado').remove()
+        .then(() => mostrarMsg('Álbum restaurado', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Noticias ───────────────────────────────────────────────────────────
     function publicarNoticia() {
       const titulo = document.getElementById('not-titulo').value.trim();
       const texto  = document.getElementById('not-texto').value.trim();
@@ -379,27 +517,29 @@
           document.getElementById('not-titulo').value = '';
           document.getElementById('not-texto').value  = '';
           mostrarMsg('Noticia publicada', 'ok');
-        }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+        })
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
     function cargarNoticias() {
-      db.ref('noticias').orderByChild('ts').on('value', snap => {
+      db.ref('noticias').on('value', snap => {
         const lista = document.getElementById('lista-noticias');
         lista.innerHTML = '';
-        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay noticias.</div>'; return; }
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Sin noticias aún.</div>'; return; }
         const items = [];
         snap.forEach(c => items.push({ id: c.key, ...c.val() }));
         items.sort((a, b) => b.ts - a.ts);
         items.forEach(n => {
-          const div = document.createElement('div');
-          div.className = 'item-row';
           const fecha = new Date(n.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+          const div = document.createElement('div');
+          div.className = 'album-item';
           div.innerHTML = `
-            <div class="item-row-body">
-              <div class="item-titulo">${esc(n.titulo)}</div>
-              <div class="item-sub">${fecha}</div>
+            <div class="album-info">
+              <div class="album-nombre">${esc(n.titulo)}</div>
+              <div class="album-desc">${esc(n.texto)}</div>
+              <div class="album-meta">${fecha}</div>
             </div>
-            <div class="item-acciones">
+            <div class="album-acciones">
               <button class="btn btn-rojo" onclick="eliminarNoticia('${n.id}')">Eliminar</button>
             </div>`;
           lista.appendChild(div);
@@ -414,41 +554,39 @@
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
-    // ── Junta ────────────────────────────────────────────────────────────────
-    let proximoOrden = 1;
-
+    // ── La Junta ───────────────────────────────────────────────────────────
     function añadirMiembro() {
-      const nombre = document.getElementById('junta-nombre').value.trim();
-      const cargo  = document.getElementById('junta-cargo').value.trim();
-      const orden  = parseInt(document.getElementById('junta-orden').value) || proximoOrden;
+      const nombre = document.getElementById('j-nombre').value.trim();
+      const cargo  = document.getElementById('j-cargo').value.trim();
+      const orden  = parseInt(document.getElementById('j-orden').value) || 99;
       if (!nombre || !cargo) { mostrarMsg('Nombre y cargo son obligatorios', 'err'); return; }
       db.ref('junta').push({ nombre, cargo, orden, ts: Date.now() })
         .then(() => {
-          document.getElementById('junta-nombre').value = '';
-          document.getElementById('junta-cargo').value  = '';
-          document.getElementById('junta-orden').value  = '';
+          document.getElementById('j-nombre').value = '';
+          document.getElementById('j-cargo').value  = '';
+          document.getElementById('j-orden').value  = '';
           mostrarMsg('Miembro añadido', 'ok');
-        }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+        })
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
     function cargarJunta() {
       db.ref('junta').on('value', snap => {
         const lista = document.getElementById('lista-junta');
         lista.innerHTML = '';
-        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay miembros.</div>'; proximoOrden = 1; return; }
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Sin miembros aún.</div>'; return; }
         const items = [];
         snap.forEach(c => items.push({ id: c.key, ...c.val() }));
-        items.sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || (a.ts ?? 0) - (b.ts ?? 0));
-        proximoOrden = items.length + 1;
+        items.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
         items.forEach(m => {
           const div = document.createElement('div');
-          div.className = 'item-row';
+          div.className = 'album-item';
           div.innerHTML = `
-            <div class="item-row-body">
-              <div class="item-titulo">${esc(m.nombre)}</div>
-              <div class="item-sub">${esc(m.cargo)} · orden ${m.orden ?? '–'}</div>
+            <div class="album-info">
+              <div class="album-nombre">${esc(m.nombre)}</div>
+              <div class="album-desc">${esc(m.cargo)}</div>
             </div>
-            <div class="item-acciones">
+            <div class="album-acciones">
               <button class="btn btn-rojo" onclick="eliminarMiembro('${m.id}')">Eliminar</button>
             </div>`;
           lista.appendChild(div);
@@ -463,46 +601,45 @@
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
-    // ── Eventos ──────────────────────────────────────────────────────────────
-    const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-
+    // ── Eventos ────────────────────────────────────────────────────────────
     function crearEvento() {
       const titulo = document.getElementById('ev-titulo').value.trim();
-      const fechaStr = document.getElementById('ev-fecha').value;
-      const lugar = document.getElementById('ev-lugar').value.trim();
-      const descripcion = document.getElementById('ev-desc').value.trim();
-      if (!titulo || !fechaStr) { mostrarMsg('Título y fecha son obligatorios', 'err'); return; }
-      const fecha = new Date(fechaStr).getTime();
-      db.ref('eventos').push({ titulo, fecha, lugar, descripcion, ts: Date.now() })
+      const fecha  = document.getElementById('ev-fecha').value;
+      const lugar  = document.getElementById('ev-lugar').value.trim();
+      const desc   = document.getElementById('ev-desc').value.trim();
+      if (!titulo || !fecha) { mostrarMsg('Título y fecha son obligatorios', 'err'); return; }
+      const fechaMs = new Date(fecha + 'T00:00:00').getTime();
+      db.ref('eventos').push({ titulo, fecha: fechaMs, lugar, descripcion: desc, ts: Date.now() })
         .then(() => {
           document.getElementById('ev-titulo').value = '';
           document.getElementById('ev-fecha').value  = '';
           document.getElementById('ev-lugar').value  = '';
           document.getElementById('ev-desc').value   = '';
           mostrarMsg('Evento creado', 'ok');
-        }).catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+        })
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
     function cargarEventos() {
       db.ref('eventos').on('value', snap => {
         const lista = document.getElementById('lista-eventos');
         lista.innerHTML = '';
-        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay eventos.</div>'; return; }
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Sin eventos aún.</div>'; return; }
         const items = [];
         snap.forEach(c => items.push({ id: c.key, ...c.val() }));
-        items.sort((a, b) => a.fecha - b.fecha);
-        items.forEach(e => {
+        items.sort((a, b) => b.fecha - a.fecha);
+        items.forEach(ev => {
+          const fecha = new Date(ev.fecha).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
           const div = document.createElement('div');
-          div.className = 'item-row';
-          const d = new Date(e.fecha);
-          const fechaStr = d.getDate() + ' ' + MESES[d.getMonth()] + ' ' + d.getFullYear();
+          div.className = 'album-item';
           div.innerHTML = `
-            <div class="item-row-body">
-              <div class="item-titulo">${esc(e.titulo)}</div>
-              <div class="item-sub">${fechaStr}${e.lugar ? ' · ' + esc(e.lugar) : ''}</div>
+            <div class="album-info">
+              <div class="album-nombre">${esc(ev.titulo)}</div>
+              <div class="album-desc">${fecha}${ev.lugar ? ' · ' + esc(ev.lugar) : ''}</div>
+              ${ev.descripcion ? `<div class="album-desc">${esc(ev.descripcion)}</div>` : ''}
             </div>
-            <div class="item-acciones">
-              <button class="btn btn-rojo" onclick="eliminarEvento('${e.id}')">Eliminar</button>
+            <div class="album-acciones">
+              <button class="btn btn-rojo" onclick="eliminarEvento('${ev.id}')">Eliminar</button>
             </div>`;
           lista.appendChild(div);
         });
@@ -516,12 +653,141 @@
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Entrevistas ────────────────────────────────────────────────────────
+    function extraerYoutubeId(input) {
+      const s = input.trim();
+      let m;
+      m = s.match(/(?:youtu\.be\/)([A-Za-z0-9_-]{11})/);
+      if (m) return m[1];
+      m = s.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+      if (m) return m[1];
+      m = s.match(/^([A-Za-z0-9_-]{11})$/);
+      if (m) return m[1];
+      return s;
+    }
+
+    function guardarEntrevista() {
+      const miembro    = document.getElementById('e-miembro').value.trim();
+      const titulo     = document.getElementById('e-titulo').value.trim();
+      const youtubeRaw = document.getElementById('e-youtubeid').value.trim();
+      const descripcion = document.getElementById('e-descripcion').value.trim();
+      if (!miembro || !titulo || !youtubeRaw) { mostrarMsg('Miembro, título e ID de YouTube son obligatorios', 'err'); return; }
+      const youtubeId = extraerYoutubeId(youtubeRaw);
+      const data = { miembro, titulo, youtubeId, ts: Date.now() };
+      if (descripcion) data.descripcion = descripcion;
+      db.ref('entrevistas').push(data)
+        .then(() => {
+          document.getElementById('e-miembro').value = '';
+          document.getElementById('e-titulo').value = '';
+          document.getElementById('e-youtubeid').value = '';
+          document.getElementById('e-descripcion').value = '';
+          mostrarMsg('Entrevista añadida', 'ok');
+        })
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function cargarEntrevistas() {
+      db.ref('entrevistas').on('value', snap => {
+        const lista = document.getElementById('lista-entrevistas');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Sin entrevistas aún.</div>'; return; }
+        const items = [];
+        snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+        items.sort((a, b) => b.ts - a.ts);
+        items.forEach(e => {
+          const div = document.createElement('div');
+          div.className = 'album-item';
+          div.innerHTML = `
+            <div class="album-info">
+              <div class="album-nombre">${esc(e.titulo)}</div>
+              <div class="album-desc">${esc(e.miembro)}</div>
+            </div>
+            <div class="album-acciones">
+              <button class="btn btn-rojo" onclick="eliminarEntrevista('${e.id}')">Eliminar</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function eliminarEntrevista(id) {
+      if (!confirm('¿Eliminar esta entrevista?')) return;
+      db.ref('entrevistas/' + id).remove()
+        .then(() => mostrarMsg('Entrevista eliminada', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Hazte Socio ────────────────────────────────────────────────────────
+    function cargarConfigSocio() {
+      db.ref('config/socio').once('value').then(snap => {
+        if (!snap.exists()) return;
+        const d = snap.val();
+        if (d.titulo)      document.getElementById('s-titulo').value = d.titulo;
+        if (d.descripcion) document.getElementById('s-descripcion').value = d.descripcion;
+        if (d.cuota)       document.getElementById('s-cuota').value = d.cuota;
+        if (d.beneficios)  document.getElementById('s-beneficios').value = d.beneficios;
+      });
+    }
+
+    function guardarConfigSocio() {
+      const titulo      = document.getElementById('s-titulo').value.trim();
+      const descripcion = document.getElementById('s-descripcion').value.trim();
+      const cuota       = document.getElementById('s-cuota').value.trim();
+      const beneficios  = document.getElementById('s-beneficios').value.trim();
+      const data = {};
+      if (titulo)      data.titulo = titulo;
+      if (descripcion) data.descripcion = descripcion;
+      if (cuota)       data.cuota = cuota;
+      if (beneficios)  data.beneficios = beneficios;
+      db.ref('config/socio').set(data)
+        .then(() => mostrarMsg('Configuración guardada', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function cargarSolicitudes() {
+      db.ref('solicitudes').on('value', snap => {
+        const lista = document.getElementById('lista-solicitudes');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay solicitudes.</div>'; return; }
+        const items = [];
+        snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+        items.sort((a, b) => b.ts - a.ts);
+        items.forEach(s => {
+          const fecha = new Date(s.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const div = document.createElement('div');
+          div.className = 'album-item';
+          div.innerHTML = `
+            <div class="album-info">
+              <div class="album-nombre">${esc(s.nombre)} · <span style="font-weight:400">${esc(s.email)}</span></div>
+              ${s.telefono ? `<div class="album-desc">Tel: ${esc(s.telefono)}</div>` : ''}
+              ${s.mensaje ? `<div class="album-desc">${esc(s.mensaje)}</div>` : ''}
+              <div class="album-meta">${fecha}</div>
+            </div>
+            <div class="album-acciones">
+              <button class="btn btn-verde" onclick="atenderSolicitud('${s.id}')">Atendida</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function atenderSolicitud(id) {
+      if (!confirm('¿Marcar como atendida y eliminar esta solicitud?')) return;
+      db.ref('solicitudes/' + id).remove()
+        .then(() => mostrarMsg('Solicitud atendida', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
     function mostrarMsg(texto, tipo) {
       const el = document.getElementById('msg');
       el.textContent = texto;
       el.className = 'visible ' + (tipo || '');
       setTimeout(() => { el.className = ''; }, 3000);
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
   </script>
 </body>

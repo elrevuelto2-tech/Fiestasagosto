@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hazte Socio — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; --radio: 14px; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; }
+    .nav-logo { color: #fff; font-weight: 900; font-size: clamp(.85rem,2.5vw,1.05rem); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: rgba(255,255,255,.8); text-decoration: none; padding: 7px 13px; border-radius: 8px; font-size: .85rem; font-weight: 600; transition: background .2s; }
+    .nav-link:hover, .nav-link.activa { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-burger { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 620px) {
+      .nav-links { display: none; position: absolute; top: 56px; left: 0; right: 0; background: var(--azul); flex-direction: column; padding: 8px; z-index: 99; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+      .nav-links.open { display: flex; }
+      .nav-burger { display: block; }
+    }
+
+    .contenido { max-width: 700px; margin: 0 auto; padding: 32px 16px 80px; }
+    .page-title { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 900; margin-bottom: 8px; }
+    .page-desc { font-size: .95rem; color: rgba(255,255,255,.65); line-height: 1.6; margin-bottom: 12px; }
+
+    .info-card {
+      background: #1a1a2e;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .info-cuota {
+      font-size: .82rem;
+      color: rgba(255,255,255,.45);
+      margin-top: 10px;
+    }
+
+    .info-cuota strong {
+      color: rgba(255,255,255,.8);
+    }
+
+    .info-beneficios {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    .info-beneficios-titulo {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.35);
+      margin-bottom: 10px;
+    }
+
+    .beneficio-item {
+      font-size: .9rem;
+      color: rgba(255,255,255,.7);
+      line-height: 1.5;
+      padding: 4px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .beneficio-item::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: rgba(255,255,255,.3);
+    }
+
+    .form-card {
+      background: #1a1a2e;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .form-card h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-group label { font-size: .78rem; color: rgba(255,255,255,.5); }
+    input[type=text], input[type=email], textarea {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: .9rem;
+      width: 100%;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--azul); }
+    textarea { resize: vertical; min-height: 90px; }
+    input::placeholder, textarea::placeholder { color: rgba(255,255,255,.3); }
+
+    .btn-enviar {
+      width: 100%;
+      padding: 13px;
+      background: var(--azul);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity .2s;
+    }
+    .btn-enviar:hover { opacity: .88; }
+    .btn-enviar:disabled { opacity: .5; cursor: not-allowed; }
+
+    .exito {
+      display: none;
+      background: rgba(46,204,113,.12);
+      border: 1px solid rgba(46,204,113,.35);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: #2ecc71;
+      font-size: .9rem;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .error-msg {
+      font-size: .8rem;
+      color: #e74c3c;
+      margin-top: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="fotos.html" class="nav-link">Fotos</a>
+        <a href="noticias.html" class="nav-link">Noticias</a>
+        <a href="junta.html" class="nav-link">La Junta</a>
+        <a href="eventos.html" class="nav-link">Eventos</a>
+        <a href="conocenos.html" class="nav-link">Conócenos</a>
+        <a href="haztesocio.html" class="nav-link activa">Hazte Socio</a>
+      </div>
+      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+
+  <div class="contenido">
+    <div class="info-card">
+      <h1 class="page-title" id="info-titulo">Hazte Socio</h1>
+      <p class="page-desc" id="info-desc">Únete a la Peña el Revuelto y disfruta de todas las actividades y eventos.</p>
+      <p class="info-cuota">Cuota: <strong id="info-cuota">Consulta con la junta directiva</strong></p>
+      <div class="info-beneficios" id="info-beneficios" style="display:none">
+        <div class="info-beneficios-titulo">Beneficios</div>
+        <div id="info-beneficios-lista"></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2>Solicitar membresía</h2>
+      <div class="form-group">
+        <label for="f-nombre">Nombre completo *</label>
+        <input type="text" id="f-nombre" placeholder="Tu nombre" maxlength="100" />
+        <span class="error-msg" id="err-nombre">El nombre es obligatorio.</span>
+      </div>
+      <div class="form-group">
+        <label for="f-email">Correo electrónico *</label>
+        <input type="email" id="f-email" placeholder="tu@email.com" maxlength="120" />
+        <span class="error-msg" id="err-email">Introduce un correo válido.</span>
+      </div>
+      <div class="form-group">
+        <label for="f-telefono">Teléfono (opcional)</label>
+        <input type="text" id="f-telefono" placeholder="612 345 678" maxlength="20" />
+      </div>
+      <div class="form-group">
+        <label for="f-mensaje">Mensaje (opcional)</label>
+        <textarea id="f-mensaje" placeholder="¿Algo que quieras decirnos?" maxlength="500"></textarea>
+      </div>
+      <button class="btn-enviar" id="btn-enviar" onclick="enviarSolicitud()">Enviar solicitud</button>
+      <div class="exito" id="exito">¡Solicitud enviada! Nos pondremos en contacto contigo.</div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    db.ref('config/socio').once('value').then(snap => {
+      if (!snap.exists()) return;
+      const d = snap.val();
+      if (d.titulo) document.getElementById('info-titulo').textContent = d.titulo;
+      if (d.descripcion) document.getElementById('info-desc').textContent = d.descripcion;
+      if (d.cuota) document.getElementById('info-cuota').textContent = d.cuota;
+      if (d.beneficios) {
+        const lineas = d.beneficios.split('\n').map(l => l.trim()).filter(l => l);
+        if (lineas.length) {
+          const section = document.getElementById('info-beneficios');
+          const lista = document.getElementById('info-beneficios-lista');
+          lineas.forEach(l => {
+            const div = document.createElement('div');
+            div.className = 'beneficio-item';
+            div.textContent = l;
+            lista.appendChild(div);
+          });
+          section.style.display = '';
+        }
+      }
+    });
+
+    function enviarSolicitud() {
+      const nombre  = document.getElementById('f-nombre').value.trim();
+      const email   = document.getElementById('f-email').value.trim();
+      const telefono = document.getElementById('f-telefono').value.trim();
+      const mensaje = document.getElementById('f-mensaje').value.trim();
+
+      let valido = true;
+
+      document.getElementById('err-nombre').style.display = 'none';
+      document.getElementById('err-email').style.display = 'none';
+
+      if (!nombre) {
+        document.getElementById('err-nombre').style.display = 'block';
+        valido = false;
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('err-email').style.display = 'block';
+        valido = false;
+      }
+
+      if (!valido) return;
+
+      const btn = document.getElementById('btn-enviar');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      const data = { nombre, email, ts: Date.now() };
+      if (telefono) data.telefono = telefono;
+      if (mensaje) data.mensaje = mensaje;
+
+      db.ref('solicitudes').push(data)
+        .then(() => {
+          document.getElementById('exito').style.display = 'block';
+          document.getElementById('f-nombre').value = '';
+          document.getElementById('f-email').value = '';
+          document.getElementById('f-telefono').value = '';
+          document.getElementById('f-mensaje').value = '';
+          btn.style.display = 'none';
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.textContent = 'Enviar solicitud';
+          alert('Error al enviar: ' + err.message);
+        });
+    }
+  </script>
+</body>
+</html>
