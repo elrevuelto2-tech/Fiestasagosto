@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Snake — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; --verde: #4caf50; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; display: flex; flex-direction: column; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; }
+    .nav-logo { color: #fff; font-weight: 900; font-size: clamp(.85rem,2.5vw,1.05rem); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: rgba(255,255,255,.8); text-decoration: none; padding: 7px 13px; border-radius: 8px; font-size: .85rem; font-weight: 600; transition: background .2s; }
+    .nav-link:hover, .nav-link.activa { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-burger { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 620px) {
+      .nav-links { display: none; position: absolute; top: 56px; left: 0; right: 0; background: var(--azul); flex-direction: column; padding: 8px; z-index: 99; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+      .nav-links.open { display: flex; }
+      .nav-burger { display: block; }
+    }
+
+    .contenido { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 24px 16px 48px; gap: 16px; }
+
+    .marcador { display: flex; gap: 32px; }
+    .marcador-item { text-align: center; }
+    .marcador-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.4); }
+    .marcador-valor { font-size: 1.6rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+    #record-valor { color: var(--azul); }
+
+    .canvas-wrap {
+      position: relative;
+      border: 2px solid var(--azul);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0,71,171,.4);
+      touch-action: none;
+    }
+    #canvas { display: block; background: #0d1117; }
+
+    /* Overlay inicio / game over */
+    .overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; background: rgba(10,10,26,.88); backdrop-filter: blur(4px);
+    }
+    .overlay.oculto { display: none; }
+    .overlay-titulo { font-size: 1.8rem; font-weight: 900; letter-spacing: .04em; }
+    .overlay-sub { font-size: .9rem; color: rgba(255,255,255,.5); text-align: center; padding: 0 20px; }
+    .overlay-puntos { font-size: 1.1rem; font-weight: 700; color: var(--azul); }
+    .btn-jugar {
+      background: var(--azul); color: #fff; border: none;
+      border-radius: 10px; padding: 12px 32px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-jugar:hover { opacity: .85; }
+
+    /* Controles táctiles */
+    .dpad {
+      display: grid;
+      grid-template-areas: ". up ." "left . right" ". down .";
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(3, 56px);
+      gap: 4px;
+    }
+    .dpad button {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px; color: #fff; font-size: 1.3rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; transition: background .1s;
+    }
+    .dpad button:active { background: var(--azul); }
+    .dpad .up    { grid-area: up; }
+    .dpad .left  { grid-area: left; }
+    .dpad .right { grid-area: right; }
+    .dpad .down  { grid-area: down; }
+
+    @media (min-width: 500px) { .dpad { display: none; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="fotos.html" class="nav-link">Fotos</a>
+        <a href="noticias.html" class="nav-link">Noticias</a>
+        <a href="junta.html" class="nav-link">La Junta</a>
+        <a href="eventos.html" class="nav-link">Eventos</a>
+        <a href="conocenos.html" class="nav-link">Conócenos</a>
+        <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
+        <a href="sugerencias.html" class="nav-link">Sugerencias</a>
+        <a href="juegos.html" class="nav-link activa">Snake</a>
+      </div>
+      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+
+  <div class="contenido">
+    <div class="marcador">
+      <div class="marcador-item">
+        <div class="marcador-label">Puntuación</div>
+        <div class="marcador-valor" id="score-valor">0</div>
+      </div>
+      <div class="marcador-item">
+        <div class="marcador-label">Record</div>
+        <div class="marcador-valor" id="record-valor">0</div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-titulo">🐍 Snake</div>
+        <div class="overlay-sub">Usa las flechas del teclado<br>o el mando de abajo en móvil</div>
+        <button class="btn-jugar" onclick="iniciar()">Jugar</button>
+      </div>
+    </div>
+
+    <div class="dpad">
+      <button class="up"    onclick="cambiarDir(0,-1)">▲</button>
+      <button class="left"  onclick="cambiarDir(-1,0)">◀</button>
+      <button class="right" onclick="cambiarDir(1,0)">▶</button>
+      <button class="down"  onclick="cambiarDir(0,1)">▼</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas  = document.getElementById('canvas');
+    const ctx     = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const scoreEl = document.getElementById('score-valor');
+    const recordEl = document.getElementById('record-valor');
+
+    const CELL = 18;
+    const COLS = 22;
+    const ROWS = 22;
+    canvas.width  = COLS * CELL;
+    canvas.height = ROWS * CELL;
+
+    let snake, dir, nextDir, food, score, record, loop, speed, running;
+
+    record = parseInt(localStorage.getItem('pena_snake_record') || '0');
+    recordEl.textContent = record;
+
+    function iniciar() {
+      snake   = [{ x: 11, y: 11 }, { x: 10, y: 11 }, { x: 9, y: 11 }];
+      dir     = { x: 1, y: 0 };
+      nextDir = { x: 1, y: 0 };
+      score   = 0;
+      speed   = 150;
+      running = true;
+      scoreEl.textContent = '0';
+      overlay.classList.add('oculto');
+      ponerComida();
+      clearInterval(loop);
+      loop = setInterval(tick, speed);
+    }
+
+    function ponerComida() {
+      let pos;
+      do {
+        pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+      } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+      food = pos;
+    }
+
+    function tick() {
+      dir = { ...nextDir };
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+      // Paredes
+      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) { gameOver(); return; }
+      // Colisión propia
+      if (snake.some(s => s.x === head.x && s.y === head.y)) { gameOver(); return; }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        scoreEl.textContent = score;
+        if (score > record) {
+          record = score;
+          recordEl.textContent = record;
+          localStorage.setItem('pena_snake_record', record);
+        }
+        // Cada 5 puntos acelera un poco
+        if (score % 5 === 0 && speed > 60) {
+          speed = Math.max(60, speed - 10);
+          clearInterval(loop);
+          loop = setInterval(tick, speed);
+        }
+        ponerComida();
+      } else {
+        snake.pop();
+      }
+
+      dibujar();
+    }
+
+    function dibujar() {
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grid sutil
+      ctx.strokeStyle = 'rgba(255,255,255,.03)';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, canvas.height); ctx.stroke(); }
+      for (let y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke(); }
+
+      // Comida
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath();
+      ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Serpiente
+      snake.forEach((s, i) => {
+        const t = 1 - i / snake.length;
+        ctx.fillStyle = i === 0 ? '#4caf50' : `rgba(76,175,80,${0.3 + t * 0.7})`;
+        const pad = i === 0 ? 1 : 2;
+        ctx.beginPath();
+        ctx.roundRect(s.x * CELL + pad, s.y * CELL + pad, CELL - pad * 2, CELL - pad * 2, i === 0 ? 4 : 3);
+        ctx.fill();
+      });
+
+      // Ojos en la cabeza
+      const h = snake[0];
+      ctx.fillStyle = '#0d1117';
+      const ox = dir.y !== 0 ? [-4, 4] : [dir.x > 0 ? 4 : -4, dir.x > 0 ? 4 : -4];
+      const oy = dir.x !== 0 ? [-3, 3] : [dir.y > 0 ? 4 : -4, dir.y > 0 ? 4 : -4];
+      [0, 1].forEach(i => {
+        ctx.beginPath();
+        ctx.arc(h.x * CELL + CELL / 2 + ox[i], h.y * CELL + CELL / 2 + oy[i], 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function gameOver() {
+      clearInterval(loop);
+      running = false;
+      overlay.innerHTML = `
+        <div class="overlay-titulo">💀 Game Over</div>
+        <div class="overlay-puntos">Puntuación: ${score}</div>
+        ${score >= record && score > 0 ? '<div style="color:#f1c40f;font-weight:700;font-size:.9rem">¡Nuevo récord!</div>' : ''}
+        <button class="btn-jugar" onclick="iniciar()">Jugar de nuevo</button>`;
+      overlay.classList.remove('oculto');
+      dibujar();
+    }
+
+    function cambiarDir(dx, dy) {
+      if (!running) return;
+      if (dx === -dir.x && dy === -dir.y) return; // no girar 180°
+      nextDir = { x: dx, y: dy };
+    }
+
+    document.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp':    case 'w': e.preventDefault(); cambiarDir(0, -1); break;
+        case 'ArrowDown':  case 's': e.preventDefault(); cambiarDir(0,  1); break;
+        case 'ArrowLeft':  case 'a': e.preventDefault(); cambiarDir(-1, 0); break;
+        case 'ArrowRight': case 'd': e.preventDefault(); cambiarDir( 1, 0); break;
+      }
+    });
+
+    // Swipe táctil
+    let tx0, ty0;
+    canvas.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY; e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - tx0;
+      const dy = e.changedTouches[0].clientY - ty0;
+      if (Math.abs(dx) > Math.abs(dy)) cambiarDir(dx > 0 ? 1 : -1, 0);
+      else cambiarDir(0, dy > 0 ? 1 : -1);
+    }, { passive: false });
+
+    // Dibujar el tablero inicial vacío
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  </script>
+</body>
+</html>
