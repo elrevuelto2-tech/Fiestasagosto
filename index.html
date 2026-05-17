@@ -35,27 +35,31 @@
 
     /* Hero */
     .hero {
-      position: relative; height: clamp(220px, 40vw, 380px);
+      position: relative; height: clamp(300px, 55vw, 520px);
       display: flex; align-items: flex-end; overflow: hidden;
     }
     .hero-bg {
       position: absolute; inset: 0;
       background-image: url('https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/Foto-grupo.jpeg');
       background-size: cover; background-position: center top;
-      filter: brightness(0.55);
+      filter: brightness(0.65);
+    }
+    .hero-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
     }
     .hero-contenido {
-      position: relative; z-index: 1; padding: 24px 20px 28px;
+      position: relative; z-index: 1; padding: 28px 24px 36px;
       width: 100%; max-width: 900px; margin: 0 auto;
     }
     .hero-titulo {
-      font-size: clamp(1.6rem, 5vw, 3rem); font-weight: 900;
+      font-size: clamp(2rem, 6vw, 3.8rem); font-weight: 900;
       letter-spacing: .06em; text-transform: uppercase;
-      line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,.7);
+      line-height: 1.05; text-shadow: 0 2px 16px rgba(0,0,0,.8);
     }
     .hero-sub {
-      margin-top: 6px; font-size: clamp(.85rem, 2vw, 1.05rem);
-      color: rgba(255,255,255,.75); text-shadow: 0 1px 6px rgba(0,0,0,.8);
+      margin-top: 8px; font-size: clamp(.9rem, 2.2vw, 1.15rem);
+      color: rgba(255,255,255,.8); text-shadow: 0 1px 8px rgba(0,0,0,.9);
     }
 
     /* Secciones */
@@ -98,6 +102,7 @@
 
   <div class="hero">
     <div class="hero-bg"></div>
+    <div class="hero-gradient"></div>
     <div class="hero-contenido">
       <div class="hero-titulo">Peña el Revuelto</div>
       <div class="hero-sub">Villanueva de Gállego · Fiestas de Agosto 2026</div>
