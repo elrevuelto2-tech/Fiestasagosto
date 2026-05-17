@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Pong — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; }
+    body { min-height: 100dvh; font-family: system-ui, sans-serif; background: #0a0a1a; color: #fff; display: flex; flex-direction: column; }
+    .contenido { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 16px 40px; gap: 14px; }
+    .marcador { display: flex; gap: 40px; align-items: center; }
+    .marcador-item { text-align: center; }
+    .marcador-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.4); }
+    .marcador-valor { font-size: 2rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .marcador-sep { font-size: 1.5rem; color: rgba(255,255,255,.2); }
+    .canvas-wrap { position: relative; border: 2px solid var(--azul); border-radius: 12px; overflow: hidden; box-shadow: 0 0 40px rgba(0,71,171,.4); touch-action: none; }
+    #canvas { display: block; background: #0d1117; }
+    .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(10,10,26,.88); backdrop-filter: blur(4px); }
+    .overlay.oculto { display: none; }
+    .overlay-titulo { font-size: 1.8rem; font-weight: 900; }
+    .overlay-sub { font-size: .9rem; color: rgba(255,255,255,.5); text-align: center; padding: 0 20px; }
+    .btn-jugar { background: var(--azul); color: #fff; border: none; border-radius: 10px; padding: 12px 32px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .btn-jugar:hover { opacity: .85; }
+    .controles-info { font-size: .75rem; color: rgba(255,255,255,.3); text-align: center; }
+    .touch-zone { width: 100%; max-width: 396px; height: 60px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 40px; }
+    .touch-btn { background: rgba(255,255,255,.1); border: none; color: #fff; font-size: 1.4rem; border-radius: 8px; padding: 8px 20px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .touch-btn:active { background: var(--azul); }
+    @media (min-width: 500px) { .touch-zone { display: none; } }
+  </style>
+</head>
+<body>
+  <script src="nav.js"></script>
+  <div class="contenido">
+    <div class="marcador">
+      <div class="marcador-item">
+        <div class="marcador-label">Tú</div>
+        <div class="marcador-valor" id="score-p">0</div>
+      </div>
+      <div class="marcador-sep">—</div>
+      <div class="marcador-item">
+        <div class="marcador-label">CPU</div>
+        <div class="marcador-valor" id="score-cpu">0</div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-titulo">🏓 Pong</div>
+        <div class="overlay-sub">Primero en llegar a 7 gana<br>↑ ↓ teclado · botones en móvil</div>
+        <button class="btn-jugar" onclick="iniciar()">Jugar</button>
+      </div>
+    </div>
+
+    <div class="touch-zone">
+      <button class="touch-btn" id="btn-up">▲</button>
+      <button class="touch-btn" id="btn-down">▼</button>
+    </div>
+    <div class="controles-info">Teclado: ↑ ↓ · Móvil: botones de arriba</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 396, H = 280;
+    canvas.width = W; canvas.height = H;
+
+    const PAD_W = 10, PAD_H = 60, BALL_R = 7, WIN = 7;
+    let p, cpu, ball, scoreP, scoreCpu, running, animId;
+    const keys = {};
+
+    document.addEventListener('keydown', e => { keys[e.key] = true; e.preventDefault(); });
+    document.addEventListener('keyup',   e => { keys[e.key] = false; });
+
+    const btnUp = document.getElementById('btn-up');
+    const btnDown = document.getElementById('btn-down');
+    btnUp.addEventListener('touchstart',   () => { keys['ArrowUp']   = true;  }, { passive: true });
+    btnUp.addEventListener('touchend',     () => { keys['ArrowUp']   = false; }, { passive: true });
+    btnDown.addEventListener('touchstart', () => { keys['ArrowDown'] = true;  }, { passive: true });
+    btnDown.addEventListener('touchend',   () => { keys['ArrowDown'] = false; }, { passive: true });
+
+    function resetBall(dir) {
+      ball = { x: W/2, y: H/2, vx: 4*(dir||1), vy: (Math.random()*3+2)*(Math.random()<.5?1:-1) };
+    }
+
+    function iniciar() {
+      p      = { x: 10,          y: H/2-PAD_H/2, speed: 5 };
+      cpu    = { x: W-10-PAD_W,  y: H/2-PAD_H/2, speed: 3.8 };
+      scoreP = scoreCpu = 0;
+      document.getElementById('score-p').textContent   = '0';
+      document.getElementById('score-cpu').textContent = '0';
+      document.getElementById('overlay').classList.add('oculto');
+      running = true;
+      resetBall(1);
+      cancelAnimationFrame(animId);
+      loop();
+    }
+
+    function loop() {
+      if (!running) return;
+      update(); draw();
+      animId = requestAnimationFrame(loop);
+    }
+
+    function update() {
+      if (keys['ArrowUp'])   p.y = Math.max(0, p.y - p.speed);
+      if (keys['ArrowDown']) p.y = Math.min(H-PAD_H, p.y + p.speed);
+
+      const cc = cpu.y + PAD_H/2;
+      if (cc < ball.y - 4) cpu.y = Math.min(H-PAD_H, cpu.y + cpu.speed);
+      if (cc > ball.y + 4) cpu.y = Math.max(0, cpu.y - cpu.speed);
+
+      ball.x += ball.vx; ball.y += ball.vy;
+
+      if (ball.y - BALL_R < 0) { ball.y = BALL_R; ball.vy *= -1; }
+      if (ball.y + BALL_R > H) { ball.y = H-BALL_R; ball.vy *= -1; }
+
+      if (ball.vx < 0 && ball.x-BALL_R < p.x+PAD_W && ball.y > p.y && ball.y < p.y+PAD_H) {
+        ball.x = p.x+PAD_W+BALL_R; ball.vx *= -1.05;
+        ball.vy += (ball.y-(p.y+PAD_H/2))*0.1;
+        ball.vx = Math.min(Math.abs(ball.vx),12)*Math.sign(ball.vx);
+      }
+      if (ball.vx > 0 && ball.x+BALL_R > cpu.x && ball.y > cpu.y && ball.y < cpu.y+PAD_H) {
+        ball.x = cpu.x-BALL_R; ball.vx *= -1.05;
+        ball.vy += (ball.y-(cpu.y+PAD_H/2))*0.1;
+        ball.vx = Math.max(-12, Math.min(12, ball.vx));
+      }
+
+      if (ball.x < 0) {
+        scoreCpu++; document.getElementById('score-cpu').textContent = scoreCpu;
+        if (scoreCpu >= WIN) { gameOver(false); return; }
+        resetBall(1);
+      }
+      if (ball.x > W) {
+        scoreP++; document.getElementById('score-p').textContent = scoreP;
+        if (scoreP >= WIN) { gameOver(true); return; }
+        resetBall(-1);
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,W,H);
+      ctx.setLineDash([8,8]); ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.roundRect(p.x,   p.y,   PAD_W, PAD_H, 4); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(cpu.x, cpu.y, PAD_W, PAD_H, 4); ctx.fill();
+      ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2); ctx.fill();
+    }
+
+    function gameOver(gane) {
+      running = false; cancelAnimationFrame(animId);
+      const o = document.getElementById('overlay');
+      o.innerHTML = `
+        <div class="overlay-titulo">${gane ? '🎉 ¡Ganaste!' : '😅 CPU gana'}</div>
+        <div class="overlay-sub">${scoreP} — ${scoreCpu}</div>
+        <button class="btn-jugar" onclick="iniciar()">Jugar de nuevo</button>`;
+      o.classList.remove('oculto'); draw();
+    }
+
+    ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,W,H);
+  </script>
+</body>
+</html>

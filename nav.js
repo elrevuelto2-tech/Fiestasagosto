@@ -8,7 +8,7 @@
     { href: 'conocenos.html',  label: 'Conócenos' },
     { href: 'haztesocio.html', label: 'Hazte Socio' },
     { href: 'sugerencias.html',label: 'Sugerencias' },
-    { href: 'juegos.html',     label: 'Snake' },
+    { href: 'juegos.html',     label: 'Juegos' },
     { href: 'cumpleanos.html', label: 'Cumpleaños' },
   ];
 
