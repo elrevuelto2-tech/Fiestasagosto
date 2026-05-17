@@ -34,32 +34,16 @@
     }
 
     /* Hero */
-    .hero {
-      position: relative; height: clamp(300px, 55vw, 520px);
-      display: flex; align-items: flex-end; overflow: hidden;
-    }
-    .hero-bg {
-      position: absolute; inset: 0;
-      background-image: url('https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/Foto-grupo.jpeg');
-      background-size: cover; background-position: center top;
-      filter: brightness(0.65);
-    }
-    .hero-gradient {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
-    }
-    .hero-contenido {
-      position: relative; z-index: 1; padding: 28px 24px 36px;
-      width: 100%; max-width: 900px; margin: 0 auto;
-    }
+    .hero { position: relative; }
+    .hero-img { width: 100%; display: block; height: auto; }
+    .hero-caption { background: var(--azul); padding: 18px 24px; }
     .hero-titulo {
-      font-size: clamp(2rem, 6vw, 3.8rem); font-weight: 900;
-      letter-spacing: .06em; text-transform: uppercase;
-      line-height: 1.05; text-shadow: 0 2px 16px rgba(0,0,0,.8);
+      font-size: clamp(1.4rem, 4vw, 2.4rem); font-weight: 900;
+      letter-spacing: .06em; text-transform: uppercase; line-height: 1.1;
     }
     .hero-sub {
-      margin-top: 8px; font-size: clamp(.9rem, 2.2vw, 1.15rem);
-      color: rgba(255,255,255,.8); text-shadow: 0 1px 8px rgba(0,0,0,.9);
+      margin-top: 4px; font-size: clamp(.8rem, 2vw, 1rem);
+      color: rgba(255,255,255,.75);
     }
 
     /* Secciones */
@@ -92,6 +76,7 @@
         <a href="eventos.html" class="nav-link">Eventos</a>
         <a href="conocenos.html" class="nav-link">Conócenos</a>
         <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
+        <a href="sugerencias.html" class="nav-link">Sugerencias</a>
       </div>
       <div class="nav-right">
         <a href="admin.html" class="btn-header">⚙ Admin</a>
@@ -101,11 +86,10 @@
   </nav>
 
   <div class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-gradient"></div>
-    <div class="hero-contenido">
+    <img class="hero-img" src="https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/Foto-grupo.jpeg" alt="Peña el Revuelto" />
+    <div class="hero-caption">
       <div class="hero-titulo">Peña el Revuelto</div>
-      <div class="hero-sub">Villanueva de Gállego · Fiestas de Agosto 2026</div>
+      <div class="hero-sub">Villanueva de Gállego</div>
     </div>
   </div>
 
@@ -118,6 +102,7 @@
       <a href="eventos.html"     class="seccion-card"><span class="seccion-card-nombre">Eventos</span><span class="seccion-card-arrow">→</span></a>
       <a href="conocenos.html"   class="seccion-card"><span class="seccion-card-nombre">Conócenos</span><span class="seccion-card-arrow">→</span></a>
       <a href="haztesocio.html"  class="seccion-card"><span class="seccion-card-nombre">Hazte Socio</span><span class="seccion-card-arrow">→</span></a>
+      <a href="sugerencias.html" class="seccion-card"><span class="seccion-card-nombre">Sugerencias</span><span class="seccion-card-arrow">→</span></a>
     </div>
   </div>
 

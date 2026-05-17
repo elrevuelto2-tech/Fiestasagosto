@@ -300,6 +300,12 @@
         <div id="lista-eventos" class="lista-items"></div>
       </div>
 
+      <!-- Sugerencias -->
+      <div class="card" id="card-sugerencias" style="display:none">
+        <h2>💬 Buzón de Sugerencias</h2>
+        <div id="lista-sugerencias" class="lista-items"><div class="vacio">Cargando...</div></div>
+      </div>
+
       <!-- Contraseña -->
       <div class="card">
         <h2>🔑 Cambiar contraseña</h2>
@@ -348,12 +354,14 @@
         document.getElementById('card-noticias').style.display = '';
         document.getElementById('card-junta').style.display = '';
         document.getElementById('card-eventos').style.display = '';
+        document.getElementById('card-sugerencias').style.display = '';
         cargarEntrevistas();
         cargarConfigSocio();
         cargarSolicitudes();
         cargarNoticias();
         cargarJunta();
         cargarEventos();
+        cargarSugerencias();
       } else {
         document.getElementById('login-error').style.display = 'block';
       }
@@ -575,16 +583,16 @@
         const lista = document.getElementById('lista-junta');
         lista.innerHTML = '';
         if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Sin miembros aún.</div>'; return; }
-        const items = [];
-        snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+        const raw = snap.val();
+        const items = Object.keys(raw).map(id => ({ id, ...raw[id] }));
         items.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
         items.forEach(m => {
           const div = document.createElement('div');
           div.className = 'album-item';
           div.innerHTML = `
             <div class="album-info">
-              <div class="album-nombre">${esc(m.nombre)}</div>
-              <div class="album-desc">${esc(m.cargo)}</div>
+              <div class="album-nombre">${esc(m.nombre || '')}</div>
+              <div class="album-desc">${esc(m.cargo || '')}</div>
             </div>
             <div class="album-acciones">
               <button class="btn btn-rojo" onclick="eliminarMiembro('${m.id}')">Eliminar</button>
@@ -775,6 +783,40 @@
       if (!confirm('¿Marcar como atendida y eliminar esta solicitud?')) return;
       db.ref('solicitudes/' + id).remove()
         .then(() => mostrarMsg('Solicitud atendida', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Sugerencias ────────────────────────────────────────────────────────
+    function cargarSugerencias() {
+      db.ref('sugerencias').on('value', snap => {
+        const lista = document.getElementById('lista-sugerencias');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">No hay sugerencias aún.</div>'; return; }
+        const raw = snap.val();
+        const items = Object.keys(raw).map(id => ({ id, ...raw[id] }));
+        items.sort((a, b) => b.ts - a.ts);
+        items.forEach(s => {
+          const fecha = new Date(s.ts).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const div = document.createElement('div');
+          div.className = 'album-item';
+          div.innerHTML = `
+            <div class="album-info">
+              <div class="album-nombre">${esc(s.nombre)}</div>
+              <div class="album-desc" style="white-space:pre-wrap">${esc(s.texto)}</div>
+              <div class="album-meta">${fecha}</div>
+            </div>
+            <div class="album-acciones">
+              <button class="btn btn-rojo" onclick="eliminarSugerencia('${s.id}')">Borrar</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function eliminarSugerencia(id) {
+      if (!confirm('¿Eliminar esta sugerencia?')) return;
+      db.ref('sugerencias/' + id).remove()
+        .then(() => mostrarMsg('Sugerencia eliminada', 'ok'))
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 

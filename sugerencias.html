@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buzón de Sugerencias — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; }
+    .nav-logo { color: #fff; font-weight: 900; font-size: clamp(.85rem,2.5vw,1.05rem); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: rgba(255,255,255,.8); text-decoration: none; padding: 7px 13px; border-radius: 8px; font-size: .85rem; font-weight: 600; transition: background .2s; }
+    .nav-link:hover, .nav-link.activa { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-burger { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 620px) {
+      .nav-links { display: none; position: absolute; top: 56px; left: 0; right: 0; background: var(--azul); flex-direction: column; padding: 8px; z-index: 99; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+      .nav-links.open { display: flex; }
+      .nav-burger { display: block; }
+    }
+
+    .contenido { max-width: 600px; margin: 0 auto; padding: 40px 16px 80px; }
+    .page-title { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 900; margin-bottom: 8px; }
+    .page-sub { color: rgba(255,255,255,.45); font-size: .9rem; margin-bottom: 36px; line-height: 1.5; }
+
+    .card { background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: .78rem; color: rgba(255,255,255,.5); }
+    input[type=text], textarea {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px; padding: 11px 14px; color: #fff; font-size: .9rem; width: 100%;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--azul); }
+    textarea { resize: vertical; min-height: 120px; font-family: inherit; }
+    .btn { padding: 13px 20px; border: none; border-radius: 10px; font-size: .95rem; font-weight: 700; cursor: pointer; transition: opacity .15s; width: 100%; }
+    .btn:hover { opacity: .85; }
+    .btn-azul { background: var(--azul); color: #fff; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    #msg-ok { display: none; text-align: center; padding: 24px; }
+    #msg-ok .icon { font-size: 3rem; margin-bottom: 12px; }
+    #msg-ok p { color: rgba(255,255,255,.6); font-size: .95rem; line-height: 1.5; }
+    #msg-ok strong { color: #fff; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="fotos.html" class="nav-link">Fotos</a>
+        <a href="noticias.html" class="nav-link">Noticias</a>
+        <a href="junta.html" class="nav-link">La Junta</a>
+        <a href="eventos.html" class="nav-link">Eventos</a>
+        <a href="conocenos.html" class="nav-link">Conócenos</a>
+        <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
+        <a href="sugerencias.html" class="nav-link activa">Sugerencias</a>
+      </div>
+      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+
+  <div class="contenido">
+    <h1 class="page-title">Buzón de Sugerencias</h1>
+    <p class="page-sub">¿Tienes alguna idea para mejorar la peña? Escríbela aquí. Tu opinión es importante para nosotros.</p>
+
+    <div class="card" id="formulario">
+      <div class="form-group">
+        <label>Tu nombre (opcional)</label>
+        <input type="text" id="s-nombre" placeholder="Anónimo" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label>Sugerencia *</label>
+        <textarea id="s-texto" placeholder="Escribe tu sugerencia aquí..." maxlength="800"></textarea>
+      </div>
+      <button class="btn btn-azul" id="btn-enviar" onclick="enviar()">Enviar sugerencia</button>
+    </div>
+
+    <div id="msg-ok">
+      <div class="icon">✅</div>
+      <p><strong>¡Sugerencia enviada!</strong><br>Gracias por tu aportación. La junta la leerá pronto.</p>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function enviar() {
+      const nombre = document.getElementById('s-nombre').value.trim() || 'Anónimo';
+      const texto  = document.getElementById('s-texto').value.trim();
+      if (!texto) {
+        document.getElementById('s-texto').focus();
+        return;
+      }
+      const btn = document.getElementById('btn-enviar');
+      btn.disabled = true; btn.textContent = 'Enviando...';
+      db.ref('sugerencias').push({ nombre, texto, ts: Date.now() })
+        .then(() => {
+          document.getElementById('formulario').style.display = 'none';
+          document.getElementById('msg-ok').style.display = 'block';
+        })
+        .catch(err => {
+          btn.disabled = false; btn.textContent = 'Enviar sugerencia';
+          alert('Error al enviar: ' + err.message);
+        });
+    }
+  </script>
+</body>
+</html>

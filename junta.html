@@ -48,6 +48,7 @@
         <a href="eventos.html" class="nav-link">Eventos</a>
         <a href="conocenos.html" class="nav-link">Conócenos</a>
         <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
+        <a href="sugerencias.html" class="nav-link">Sugerencias</a>
       </div>
       <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
     </div>
@@ -84,8 +85,8 @@
         lista.innerHTML = '<div class="vacio">La junta aún no está configurada.</div>';
         return;
       }
-      const items = [];
-      snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+      const raw = snap.val();
+      const items = Object.keys(raw).map(id => ({ id, ...raw[id] }));
       items.sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || (a.ts ?? 0) - (b.ts ?? 0));
       const grid = document.createElement('div');
       grid.className = 'junta-grid';
@@ -93,8 +94,8 @@
         const div = document.createElement('div');
         div.className = 'miembro-card';
         div.innerHTML = `
-          <div class="miembro-cargo">${esc(m.cargo)}</div>
-          <div class="miembro-nombre">${esc(m.nombre)}</div>`;
+          <div class="miembro-cargo">${esc(m.cargo || '')}</div>
+          <div class="miembro-nombre">${esc(m.nombre || '')}</div>`;
         grid.appendChild(div);
       });
       lista.appendChild(grid);
