@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cumpleaños — Peña el Revuelto</title>
+  <meta name="theme-color" content="#0047ab" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --azul: #0047ab; --radio: 14px; }
+    body { min-height: 100dvh; font-family: system-ui, -apple-system, sans-serif; background: #0a0a1a; color: #fff; overflow-x: hidden; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: var(--azul); box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; }
+    .nav-logo { color: #fff; font-weight: 900; font-size: clamp(.85rem,2.5vw,1.05rem); text-decoration: none; letter-spacing: .05em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: rgba(255,255,255,.8); text-decoration: none; padding: 7px 13px; border-radius: 8px; font-size: .85rem; font-weight: 600; transition: background .2s; }
+    .nav-link:hover, .nav-link.activa { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-burger { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 620px) {
+      .nav-links { display: none; position: absolute; top: 56px; left: 0; right: 0; background: var(--azul); flex-direction: column; padding: 8px; z-index: 99; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+      .nav-links.open { display: flex; }
+      .nav-burger { display: block; }
+    }
+
+    .contenido { max-width: 700px; margin: 0 auto; padding: 32px 16px 80px; }
+    .page-title { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 900; margin-bottom: 32px; }
+
+    .seccion-titulo { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.4); margin: 28px 0 14px; }
+    .seccion-titulo:first-of-type { margin-top: 0; }
+
+    .cumple-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 18px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 16px; }
+    .cumple-card.hoy { background: rgba(0,71,171,.25); border-color: var(--azul); box-shadow: 0 0 20px rgba(0,71,171,.3); }
+    .cumple-fecha-box { flex-shrink: 0; text-align: center; background: var(--azul); border-radius: 10px; padding: 8px 12px; min-width: 52px; }
+    .cumple-card.hoy .cumple-fecha-box { background: #f1c40f; }
+    .cumple-dia { font-size: 1.4rem; font-weight: 900; line-height: 1; color: #fff; }
+    .cumple-card.hoy .cumple-dia { color: #0a0a1a; }
+    .cumple-mes { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; opacity: .85; color: #fff; }
+    .cumple-card.hoy .cumple-mes { color: #0a0a1a; opacity: .8; }
+    .cumple-body { flex: 1; min-width: 0; }
+    .cumple-nombre { font-size: 1rem; font-weight: 800; }
+    .cumple-badge { display: inline-block; background: #f1c40f; color: #0a0a1a; font-size: .7rem; font-weight: 700; border-radius: 20px; padding: 2px 10px; margin-top: 4px; letter-spacing: .04em; }
+    .cumple-dias-restantes { font-size: .78rem; color: rgba(255,255,255,.4); margin-top: 3px; }
+
+    .vacio { color: rgba(255,255,255,.3); font-size: .88rem; padding: 8px 0 20px; }
+    .cargando { text-align: center; color: rgba(255,255,255,.3); padding: 60px 20px; font-size: .9rem; }
+  </style>
+</head>
+<body>
+
+  <script src="nav.js"></script>
+
+  <div class="contenido">
+    <h1 class="page-title">🎂 Cumpleaños</h1>
+    <div id="lista" class="cargando">Cargando...</div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    });
+    const db = firebase.database();
+
+    const MESES_CORTO = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function diasHastaProximo(dia, mes) {
+      const hoy = new Date();
+      const anyo = hoy.getFullYear();
+      let proximo = new Date(anyo, mes - 1, dia);
+      if (proximo < hoy) proximo = new Date(anyo + 1, mes - 1, dia);
+      const diff = proximo - new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      return Math.round(diff / 86400000);
+    }
+
+    db.ref('cumpleanos').on('value', snap => {
+      const lista = document.getElementById('lista');
+      lista.innerHTML = '';
+
+      if (!snap.exists()) {
+        lista.innerHTML = '<div class="vacio">No hay cumpleaños registrados.</div>';
+        return;
+      }
+
+      const hoy = new Date();
+      const diaHoy = hoy.getDate();
+      const mesHoy = hoy.getMonth() + 1;
+
+      const items = [];
+      snap.forEach(c => items.push({ id: c.key, ...c.val() }));
+
+      const cumpleHoy = items.filter(i => i.dia === diaHoy && i.mes === mesHoy);
+      const proximos = items.filter(i => !(i.dia === diaHoy && i.mes === mesHoy));
+      proximos.sort((a, b) => diasHastaProximo(a.dia, a.mes) - diasHastaProximo(b.dia, b.mes));
+
+      if (cumpleHoy.length) {
+        const t1 = document.createElement('div');
+        t1.className = 'seccion-titulo';
+        t1.textContent = '🎉 Hoy de cumpleaños';
+        lista.appendChild(t1);
+        cumpleHoy.forEach(p => lista.appendChild(renderCumple(p, true)));
+      }
+
+      const t2 = document.createElement('div');
+      t2.className = 'seccion-titulo';
+      t2.textContent = 'Próximos cumpleaños';
+      lista.appendChild(t2);
+
+      if (proximos.length) {
+        proximos.forEach(p => lista.appendChild(renderCumple(p, false)));
+      } else if (!cumpleHoy.length) {
+        const v = document.createElement('div');
+        v.className = 'vacio';
+        v.textContent = 'No hay cumpleaños registrados.';
+        lista.appendChild(v);
+      }
+    });
+
+    function renderCumple(p, esHoy) {
+      const div = document.createElement('div');
+      div.className = 'cumple-card' + (esHoy ? ' hoy' : '');
+      const dias = diasHastaProximo(p.dia, p.mes);
+      const mesCorto = MESES_CORTO[(p.mes || 1) - 1];
+      div.innerHTML = `
+        <div class="cumple-fecha-box">
+          <div class="cumple-dia">${p.dia}</div>
+          <div class="cumple-mes">${mesCorto}</div>
+        </div>
+        <div class="cumple-body">
+          <div class="cumple-nombre">${esc(p.nombre)}</div>
+          ${esHoy ? '<span class="cumple-badge">🎂 Hoy es su cumpleaños</span>' : `<div class="cumple-dias-restantes">En ${dias} día${dias === 1 ? '' : 's'}</div>`}
+        </div>`;
+      return div;
+    }
+  </script>
+</body>
+</html>

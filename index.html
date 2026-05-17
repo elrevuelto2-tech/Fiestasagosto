@@ -46,6 +46,26 @@
       color: rgba(255,255,255,.75);
     }
 
+    /* Cuenta atrás */
+    #countdown-wrap { background: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,.06); }
+    #countdown-inner { max-width: 900px; margin: 0 auto; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    #countdown-inner.oculto { display: none; }
+    .cd-evento { min-width: 0; }
+    .cd-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.4); margin-bottom: 2px; }
+    .cd-titulo { font-size: 1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+    .cd-unidades { display: flex; gap: 10px; flex-shrink: 0; }
+    .cd-bloque { text-align: center; background: var(--azul); border-radius: 10px; padding: 8px 12px; min-width: 52px; }
+    .cd-num { font-size: 1.5rem; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+    .cd-unit { font-size: .6rem; text-transform: uppercase; letter-spacing: .07em; opacity: .75; margin-top: 2px; }
+    @media (max-width: 480px) {
+      .cd-bloque { min-width: 42px; padding: 6px 8px; }
+      .cd-num { font-size: 1.2rem; }
+    }
+
+    /* Cumpleaños notif */
+    #birthday-notif { display: none; background: var(--azul); border-bottom: 1px solid rgba(255,255,255,.15); }
+    #birthday-notif-inner { max-width: 900px; margin: 0 auto; padding: 14px 24px; font-size: .9rem; font-weight: 600; }
+
     /* Secciones */
     .secciones { max-width: 900px; margin: 0 auto; padding: 28px 16px 80px; }
     .secciones-titulo { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.35); margin-bottom: 14px; }
@@ -65,26 +85,7 @@
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
-      <div class="nav-links" id="nav-links">
-        <a href="index.html" class="nav-link activa">Inicio</a>
-        <a href="fotos.html" class="nav-link">Fotos</a>
-        <a href="noticias.html" class="nav-link">Noticias</a>
-        <a href="junta.html" class="nav-link">La Junta</a>
-        <a href="eventos.html" class="nav-link">Eventos</a>
-        <a href="conocenos.html" class="nav-link">Conócenos</a>
-        <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
-        <a href="sugerencias.html" class="nav-link">Sugerencias</a>
-        <a href="juegos.html" class="nav-link">Snake</a>
-      </div>
-      <div class="nav-right">
-        <a href="admin.html" class="btn-header">⚙ Admin</a>
-        <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
-      </div>
-    </div>
-  </nav>
+  <script src="nav.js"></script>
 
   <div class="hero">
     <img class="hero-img" src="https://raw.githubusercontent.com/elrevuelto2-tech/Fiestasagosto/main/Foto-grupo.jpeg" alt="Peña el Revuelto" />
@@ -92,6 +93,25 @@
       <div class="hero-titulo">Peña el Revuelto</div>
       <div class="hero-sub">Villanueva de Gállego</div>
     </div>
+  </div>
+
+  <div id="countdown-wrap">
+    <div id="countdown-inner" class="oculto">
+      <div class="cd-evento">
+        <div class="cd-label">Próximo evento</div>
+        <div class="cd-titulo" id="cd-titulo"></div>
+      </div>
+      <div class="cd-unidades">
+        <div class="cd-bloque"><div class="cd-num" id="cd-d">--</div><div class="cd-unit">días</div></div>
+        <div class="cd-bloque"><div class="cd-num" id="cd-h">--</div><div class="cd-unit">horas</div></div>
+        <div class="cd-bloque"><div class="cd-num" id="cd-m">--</div><div class="cd-unit">min</div></div>
+        <div class="cd-bloque"><div class="cd-num" id="cd-s">--</div><div class="cd-unit">seg</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="birthday-notif">
+    <div id="birthday-notif-inner"></div>
   </div>
 
   <div class="secciones">
@@ -105,13 +125,76 @@
       <a href="haztesocio.html"  class="seccion-card"><span class="seccion-card-nombre">Hazte Socio</span><span class="seccion-card-arrow">→</span></a>
       <a href="sugerencias.html" class="seccion-card"><span class="seccion-card-nombre">Sugerencias</span><span class="seccion-card-arrow">→</span></a>
       <a href="juegos.html"      class="seccion-card"><span class="seccion-card-nombre">Snake</span><span class="seccion-card-arrow">→</span></a>
+      <a href="cumpleanos.html"  class="seccion-card"><span class="seccion-card-nombre">Cumpleaños</span><span class="seccion-card-arrow">→</span></a>
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    firebase.initializeApp({
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    });
+    const db = firebase.database();
+
+    let cdTarget = null, cdTimer = null;
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tickCd() {
+      if (!cdTarget) return;
+      const diff = cdTarget - Date.now();
+      if (diff <= 0) { document.getElementById('countdown-inner').classList.add('oculto'); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('cd-d').textContent = d;
+      document.getElementById('cd-h').textContent = pad(h);
+      document.getElementById('cd-m').textContent = pad(m);
+      document.getElementById('cd-s').textContent = pad(s);
     }
+
+    db.ref('eventos').once('value', snap => {
+      if (!snap.exists()) return;
+      const ahora = Date.now();
+      let proximo = null;
+      snap.forEach(c => {
+        const ev = c.val();
+        if (ev.fecha > ahora && (!proximo || ev.fecha < proximo.fecha)) proximo = ev;
+      });
+      if (!proximo) return;
+      cdTarget = proximo.fecha;
+      document.getElementById('cd-titulo').textContent = proximo.titulo;
+      document.getElementById('countdown-inner').classList.remove('oculto');
+      tickCd();
+      cdTimer = setInterval(tickCd, 1000);
+    });
+
+    db.ref('cumpleanos').once('value', snap => {
+      if (!snap.exists()) return;
+      const hoy = new Date();
+      const diaHoy = hoy.getDate();
+      const mesHoy = hoy.getMonth() + 1;
+      const cumpleaneros = [];
+      snap.forEach(c => {
+        const v = c.val();
+        if (v.dia === diaHoy && v.mes === mesHoy) cumpleaneros.push(v.nombre);
+      });
+      if (cumpleaneros.length === 0) return;
+      const notif = document.getElementById('birthday-notif');
+      const inner = document.getElementById('birthday-notif-inner');
+      inner.textContent = '🎂 Hoy es el cumpleaños de ' + cumpleaneros.join(', ') + '!';
+      notif.style.display = 'block';
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   </script>
 </body>
 </html>

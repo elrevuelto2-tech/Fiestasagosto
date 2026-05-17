@@ -80,27 +80,21 @@
     .dpad .down  { grid-area: down; }
 
     @media (min-width: 500px) { .dpad { display: none; } }
+
+    .leaderboard { width: 100%; max-width: 396px; background: #1a1a2e; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 16px; }
+    .leaderboard-titulo { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.4); margin-bottom: 12px; }
+    .lb-fila { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .lb-fila:last-child { border-bottom: none; }
+    .lb-rank { font-size: .8rem; font-weight: 700; color: rgba(255,255,255,.35); min-width: 22px; text-align: right; }
+    .lb-rank.top { color: #f1c40f; }
+    .lb-nombre { flex: 1; font-size: .9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lb-puntos { font-size: .95rem; font-weight: 900; color: var(--azul); font-variant-numeric: tabular-nums; }
+    .lb-vacio { color: rgba(255,255,255,.3); font-size: .85rem; text-align: center; padding: 16px 0; }
   </style>
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
-      <div class="nav-links" id="nav-links">
-        <a href="index.html" class="nav-link">Inicio</a>
-        <a href="fotos.html" class="nav-link">Fotos</a>
-        <a href="noticias.html" class="nav-link">Noticias</a>
-        <a href="junta.html" class="nav-link">La Junta</a>
-        <a href="eventos.html" class="nav-link">Eventos</a>
-        <a href="conocenos.html" class="nav-link">Conócenos</a>
-        <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
-        <a href="sugerencias.html" class="nav-link">Sugerencias</a>
-        <a href="juegos.html" class="nav-link activa">Snake</a>
-      </div>
-      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
-    </div>
-  </nav>
+  <script src="nav.js"></script>
 
   <div class="contenido">
     <div class="marcador">
@@ -129,8 +123,51 @@
       <button class="right" onclick="cambiarDir(1,0)">▶</button>
       <button class="down"  onclick="cambiarDir(0,1)">▼</button>
     </div>
+
+    <div class="leaderboard">
+      <div class="leaderboard-titulo">🏆 Mejores puntuaciones</div>
+      <div id="lb-lista"><div class="lb-vacio">Cargando...</div></div>
+    </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyDZcYJVrjtcDewG1JOBuWlirirGAJzqkRE",
+      authDomain: "fotosfiestas-4609c.firebaseapp.com",
+      databaseURL: "https://fotosfiestas-4609c-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fotosfiestas-4609c",
+      storageBucket: "fotosfiestas-4609c.firebasestorage.app",
+      messagingSenderId: "204866897359",
+      appId: "1:204866897359:web:f8c1cc6a309eb2c2923eba"
+    });
+    const db = firebase.database();
+
+    function cargarLeaderboard() {
+      db.ref('snake_records').orderByChild('puntos').limitToLast(10).once('value', snap => {
+        const lista = document.getElementById('lb-lista');
+        if (!snap.exists()) { lista.innerHTML = '<div class="lb-vacio">Sin puntuaciones aún.</div>'; return; }
+        const items = [];
+        snap.forEach(c => items.push(c.val()));
+        items.sort((a, b) => b.puntos - a.puntos);
+        lista.innerHTML = '';
+        items.forEach((item, i) => {
+          const fila = document.createElement('div');
+          fila.className = 'lb-fila';
+          const rankClass = i < 3 ? 'lb-rank top' : 'lb-rank';
+          fila.innerHTML = `<span class="${rankClass}">${i + 1}</span><span class="lb-nombre">${esc(item.nombre)}</span><span class="lb-puntos">${item.puntos}</span>`;
+          lista.appendChild(fila);
+        });
+      });
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    cargarLeaderboard();
+  </script>
   <script>
     const canvas  = document.getElementById('canvas');
     const ctx     = canvas.getContext('2d');
@@ -245,13 +282,35 @@
     function gameOver() {
       clearInterval(loop);
       running = false;
-      overlay.innerHTML = `
-        <div class="overlay-titulo">💀 Game Over</div>
-        <div class="overlay-puntos">Puntuación: ${score}</div>
-        ${score >= record && score > 0 ? '<div style="color:#f1c40f;font-weight:700;font-size:.9rem">¡Nuevo récord!</div>' : ''}
-        <button class="btn-jugar" onclick="iniciar()">Jugar de nuevo</button>`;
+      const nombreGuardado = localStorage.getItem('pena_nombre') || '';
+      const esRecord = score >= record && score > 0;
+      if (score > 0) {
+        overlay.innerHTML = `
+          <div class="overlay-titulo">💀 Game Over</div>
+          <div class="overlay-puntos">Puntuación: ${score}</div>
+          ${esRecord ? '<div style="color:#f1c40f;font-weight:700;font-size:.9rem">¡Nuevo récord!</div>' : ''}
+          <div style="display:flex;flex-direction:column;gap:8px;width:200px">
+            <input id="go-nombre" type="text" placeholder="Tu nombre" maxlength="30" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 12px;color:#fff;font-size:.9rem;width:100%" value="${nombreGuardado.replace(/"/g,'&quot;')}" />
+            <button class="btn-jugar" style="padding:9px 20px;font-size:.88rem" onclick="guardarPuntuacion()">Guardar puntuación</button>
+          </div>
+          <button class="btn-jugar" style="background:rgba(255,255,255,.12);font-size:.82rem;padding:7px 18px" onclick="iniciar()">Jugar de nuevo</button>`;
+      } else {
+        overlay.innerHTML = `
+          <div class="overlay-titulo">💀 Game Over</div>
+          <div class="overlay-puntos">Puntuación: 0</div>
+          <button class="btn-jugar" onclick="iniciar()">Jugar de nuevo</button>`;
+      }
       overlay.classList.remove('oculto');
       dibujar();
+    }
+
+    function guardarPuntuacion() {
+      const nombreInput = document.getElementById('go-nombre');
+      const nombre = (nombreInput ? nombreInput.value.trim() : '') || 'Anónimo';
+      localStorage.setItem('pena_nombre', nombre);
+      db.ref('snake_records').push({ nombre, puntos: score, ts: Date.now() })
+        .then(() => { cargarLeaderboard(); iniciar(); })
+        .catch(() => iniciar());
     }
 
     function cambiarDir(dx, dy) {

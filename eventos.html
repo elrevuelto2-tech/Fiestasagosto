@@ -43,29 +43,29 @@
     .evento-card.pasado { opacity: .6; }
     .evento-card.pasado .evento-fecha-box { background: rgba(255,255,255,.12); }
 
+    .evento-countdown { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .ecd-bloque { text-align: center; background: var(--azul); border-radius: 8px; padding: 5px 9px; min-width: 44px; }
+    .ecd-num { font-size: 1.1rem; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+    .ecd-unit { font-size: .58rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; }
+
     .vacio { color: rgba(255,255,255,.3); font-size: .88rem; padding: 8px 0 20px; }
     .cargando { text-align: center; color: rgba(255,255,255,.3); padding: 60px 20px; font-size: .9rem; }
+
+    .rsvp-wrap { margin-top: 12px; }
+    .btn-rsvp { background: var(--azul); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: .82rem; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+    .btn-rsvp:hover { opacity: .85; }
+    .btn-rsvp.confirmado { background: #1a7a3a; cursor: default; }
+    .rsvp-form { display: none; margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .rsvp-form.oculto { display: none; }
+    .rsvp-form input { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 7px 11px; color: #fff; font-size: .82rem; flex: 1; min-width: 120px; }
+    .rsvp-form input:focus { outline: none; border-color: var(--azul); }
+    .rsvp-form button { background: var(--azul); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: .82rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .rsvp-count { font-size: .78rem; color: rgba(255,255,255,.5); margin-top: 6px; }
   </style>
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Peña el Revuelto</a>
-      <div class="nav-links" id="nav-links">
-        <a href="index.html" class="nav-link">Inicio</a>
-        <a href="fotos.html" class="nav-link">Fotos</a>
-        <a href="noticias.html" class="nav-link">Noticias</a>
-        <a href="junta.html" class="nav-link">La Junta</a>
-        <a href="eventos.html" class="nav-link activa">Eventos</a>
-        <a href="conocenos.html" class="nav-link">Conócenos</a>
-        <a href="haztesocio.html" class="nav-link">Hazte Socio</a>
-        <a href="sugerencias.html" class="nav-link">Sugerencias</a>
-        <a href="juegos.html" class="nav-link">Snake</a>
-      </div>
-      <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
-    </div>
-  </nav>
+  <script src="nav.js"></script>
 
   <div class="contenido">
     <h1 class="page-title">📅 Eventos</h1>
@@ -91,12 +91,26 @@
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    function pad(n) { return String(n).padStart(2,'0'); }
+
     const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const cdTimers = [];
+
+    function getRsvpList() {
+      try { return JSON.parse(localStorage.getItem('pena_rsvp') || '[]'); } catch(e) { return []; }
+    }
+
+    function setRsvp(id) {
+      const list = getRsvpList();
+      if (!list.includes(id)) { list.push(id); localStorage.setItem('pena_rsvp', JSON.stringify(list)); }
+    }
 
     function renderEvento(e, pasado) {
       const d = new Date(e.fecha);
+      const cdId = 'cd-' + e.id;
       const div = document.createElement('div');
       div.className = 'evento-card' + (pasado ? ' pasado' : '');
+      const yaConfirmado = getRsvpList().includes(e.id);
       div.innerHTML = `
         <div class="evento-fecha-box">
           <div class="evento-dia">${d.getDate()}</div>
@@ -107,13 +121,66 @@
           <div class="evento-titulo">${esc(e.titulo)}</div>
           ${e.lugar ? `<div class="evento-lugar">${esc(e.lugar)}</div>` : ''}
           ${e.descripcion ? `<div class="evento-desc">${esc(e.descripcion)}</div>` : ''}
+          ${!pasado ? `<div class="evento-countdown" id="${cdId}">
+            <div class="ecd-bloque"><div class="ecd-num" id="${cdId}-d">-</div><div class="ecd-unit">días</div></div>
+            <div class="ecd-bloque"><div class="ecd-num" id="${cdId}-h">-</div><div class="ecd-unit">horas</div></div>
+            <div class="ecd-bloque"><div class="ecd-num" id="${cdId}-m">-</div><div class="ecd-unit">min</div></div>
+            <div class="ecd-bloque"><div class="ecd-num" id="${cdId}-s">-</div><div class="ecd-unit">seg</div></div>
+          </div>
+          <div class="rsvp-wrap">
+            <button class="btn-rsvp${yaConfirmado ? ' confirmado' : ''}" id="btn-rsvp-${e.id}" onclick="toggleRsvpForm('${e.id}')">${yaConfirmado ? '✓ Confirmado' : 'Confirmar asistencia'}</button>
+            <div class="rsvp-form oculto" id="rsvp-form-${e.id}">
+              <input type="text" id="rsvp-nombre-${e.id}" placeholder="Tu nombre" maxlength="60" value="${esc(localStorage.getItem('pena_nombre') || '')}" />
+              <button onclick="confirmarAsistencia('${e.id}')">Confirmo</button>
+            </div>
+            <div class="rsvp-count" id="rsvp-count-${e.id}"></div>
+          </div>` : ''}
         </div>`;
+
+      if (!pasado) {
+        const tick = () => {
+          const diff = e.fecha - Date.now();
+          if (diff <= 0) return;
+          document.getElementById(cdId+'-d').textContent = Math.floor(diff/86400000);
+          document.getElementById(cdId+'-h').textContent = pad(Math.floor((diff%86400000)/3600000));
+          document.getElementById(cdId+'-m').textContent = pad(Math.floor((diff%3600000)/60000));
+          document.getElementById(cdId+'-s').textContent = pad(Math.floor((diff%60000)/1000));
+        };
+        tick();
+        cdTimers.push(setInterval(tick, 1000));
+        db.ref('asistencias/' + e.id).on('value', snap => {
+          const countEl = document.getElementById('rsvp-count-' + e.id);
+          if (countEl) countEl.textContent = snap.exists() ? Object.keys(snap.val()).length + ' personas asistirán' : '';
+        });
+      }
+
       return div;
+    }
+
+    function toggleRsvpForm(id) {
+      if (getRsvpList().includes(id)) return;
+      const form = document.getElementById('rsvp-form-' + id);
+      if (form) form.classList.toggle('oculto');
+    }
+
+    function confirmarAsistencia(id) {
+      const input = document.getElementById('rsvp-nombre-' + id);
+      const nombre = (input ? input.value.trim() : '') || 'Anónimo';
+      localStorage.setItem('pena_nombre', nombre);
+      db.ref('asistencias/' + id).push({ nombre, ts: Date.now() }).then(() => {
+        setRsvp(id);
+        const btn = document.getElementById('btn-rsvp-' + id);
+        if (btn) { btn.textContent = '✓ Confirmado'; btn.classList.add('confirmado'); }
+        const form = document.getElementById('rsvp-form-' + id);
+        if (form) form.classList.add('oculto');
+      });
     }
 
     db.ref('eventos').on('value', snap => {
       const lista = document.getElementById('lista');
       lista.innerHTML = '';
+      cdTimers.forEach(t => clearInterval(t));
+      cdTimers.length = 0;
 
       const hoy = Date.now();
       const proximos = [];
