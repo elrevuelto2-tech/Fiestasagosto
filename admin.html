@@ -300,6 +300,32 @@
         <div id="lista-eventos" class="lista-items"></div>
       </div>
 
+      <!-- Cumpleaños -->
+      <div class="card" id="card-cumpleanos" style="display:none">
+        <h2>🎂 Cumpleaños</h2>
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-bottom:12px">
+          <div class="form-group" style="margin:0">
+            <label>Nombre *</label>
+            <input type="text" id="cum-nombre" placeholder="Nombre del socio" maxlength="80" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Día</label>
+            <input type="number" id="cum-dia" placeholder="15" min="1" max="31" style="width:60px" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Mes</label>
+            <select id="cum-mes" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 10px;color:#fff;font-size:.9rem">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-azul" onclick="añadirCumpleanos()">Añadir cumpleaños</button>
+        <div id="lista-cumpleanos" class="lista-items"></div>
+      </div>
+
       <!-- Sugerencias -->
       <div class="card" id="card-sugerencias" style="display:none">
         <h2>💬 Buzón de Sugerencias</h2>
@@ -354,6 +380,7 @@
         document.getElementById('card-noticias').style.display = '';
         document.getElementById('card-junta').style.display = '';
         document.getElementById('card-eventos').style.display = '';
+        document.getElementById('card-cumpleanos').style.display = '';
         document.getElementById('card-sugerencias').style.display = '';
         cargarEntrevistas();
         cargarConfigSocio();
@@ -361,6 +388,7 @@
         cargarNoticias();
         cargarJunta();
         cargarEventos();
+        cargarCumpleanos();
         cargarSugerencias();
       } else {
         document.getElementById('login-error').style.display = 'block';
@@ -783,6 +811,54 @@
       if (!confirm('¿Marcar como atendida y eliminar esta solicitud?')) return;
       db.ref('solicitudes/' + id).remove()
         .then(() => mostrarMsg('Solicitud atendida', 'ok'))
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    // ── Cumpleaños ─────────────────────────────────────────────────────────
+    const MESES_CUM = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    function añadirCumpleanos() {
+      const nombre = document.getElementById('cum-nombre').value.trim();
+      const dia    = parseInt(document.getElementById('cum-dia').value);
+      const mes    = parseInt(document.getElementById('cum-mes').value);
+      if (!nombre || !dia || dia < 1 || dia > 31) { mostrarMsg('Nombre y día son obligatorios', 'err'); return; }
+      db.ref('cumpleanos').push({ nombre, dia, mes, ts: Date.now() })
+        .then(() => {
+          document.getElementById('cum-nombre').value = '';
+          document.getElementById('cum-dia').value = '';
+          mostrarMsg('Cumpleaños añadido', 'ok');
+        })
+        .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
+    }
+
+    function cargarCumpleanos() {
+      db.ref('cumpleanos').on('value', snap => {
+        const lista = document.getElementById('lista-cumpleanos');
+        lista.innerHTML = '';
+        if (!snap.exists()) { lista.innerHTML = '<div class="vacio">Sin cumpleaños aún.</div>'; return; }
+        const raw = snap.val();
+        const items = Object.keys(raw).map(id => ({ id, ...raw[id] }));
+        items.sort((a, b) => a.mes - b.mes || a.dia - b.dia);
+        items.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'album-item';
+          div.innerHTML = `
+            <div class="album-info">
+              <div class="album-nombre">${esc(c.nombre)}</div>
+              <div class="album-desc">${c.dia} de ${MESES_CUM[c.mes]}</div>
+            </div>
+            <div class="album-acciones">
+              <button class="btn btn-rojo" onclick="eliminarCumpleano('${c.id}')">Eliminar</button>
+            </div>`;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    function eliminarCumpleano(id) {
+      if (!confirm('¿Eliminar este cumpleaños?')) return;
+      db.ref('cumpleanos/' + id).remove()
+        .then(() => mostrarMsg('Eliminado', 'ok'))
         .catch(err => mostrarMsg('Error: ' + err.message, 'err'));
     }
 
